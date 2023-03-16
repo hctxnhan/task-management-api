@@ -36,6 +36,9 @@ export class Task {
   @ManyToOne(() => User, (user) => user.tasks)
   user: User;
 
+  @Column()
+  userId: number;
+
   @JoinTable()
   @ManyToMany(() => Label, (label) => label.tasks)
   labels: Label[];
