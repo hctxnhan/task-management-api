@@ -10,6 +10,9 @@ import { TaskModule } from './features/task/task.module';
 import { UserModule } from './features/user/user.module';
 import { LabelModule } from './features/label/label.module';
 import { CategoryModule } from './features/category/category.module';
+import { AuthModule } from './features/auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -27,8 +30,16 @@ import { CategoryModule } from './features/category/category.module';
     UserModule,
     LabelModule,
     CategoryModule,
+    AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TypeOrmConfigServiceService],
+  providers: [
+    AppService,
+    TypeOrmConfigServiceService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

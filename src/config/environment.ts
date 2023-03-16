@@ -7,4 +7,8 @@ export const environmentConfig = () => ({
     database: process.env.DATABASE_NAME,
     schema: process.env.DATABASE_SCHEMA,
   },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  },
 });
