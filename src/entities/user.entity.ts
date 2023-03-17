@@ -18,18 +18,21 @@ export class User {
   @Column()
   email: string;
 
-  @Column()
-  dateOfBirth: Date;
+  @Column({
+    type: 'date',
+    nullable: true,
+  })
+  dateOfBirth?: Date;
 
   @Column()
   name: string;
 
   @OneToMany(() => Task, (task) => task.user)
-  tasks: Task[];
+  tasks?: Task[];
 
   @OneToMany(() => Label, (label) => label.user)
-  labels: Label[];
+  labels?: Label[];
 
   @OneToMany(() => Label, (category) => category.user)
-  categories: Label[];
+  categories?: Label[];
 }
