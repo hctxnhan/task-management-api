@@ -1,16 +1,22 @@
+import { SetResourceType } from '@/common/decorators/resource-type.decorator';
+import { UserOwnResourceGuard } from '@/common/guards/user-own-resource.guard';
+import { Category } from '@/entities/category.entity';
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
+@UseGuards(UserOwnResourceGuard)
+@SetResourceType(Category)
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}

@@ -1,4 +1,5 @@
 import { TaskStatus } from '@/types/enum';
+import { IUserOwnResource } from '@/types/user-own-resource.interface';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -12,7 +13,7 @@ import { Label } from './label.entity';
 import { User } from './user.entity';
 
 @Entity()
-export class Task {
+export class Task implements IUserOwnResource {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -40,10 +41,14 @@ export class Task {
   userId: number;
 
   @JoinTable()
-  @ManyToMany(() => Label, (label) => label.tasks)
+  @ManyToMany(() => Label, (label) => label.tasks, {
+    eager: true,
+  })
   labels: Label[];
 
   @JoinTable()
-  @ManyToMany(() => Category, (category) => category.tasks)
+  @ManyToMany(() => Category, (category) => category.tasks, {
+    eager: true,
+  })
   categories: Category[];
 }

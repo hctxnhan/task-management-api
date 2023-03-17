@@ -1,4 +1,5 @@
 import { TaskStatus } from '@/types/enum';
+import { Optional } from '@nestjs/common/decorators';
 import { IsDateString, IsEnum, IsInt, IsString } from 'class-validator';
 
 export class CreateTaskDto {
@@ -17,10 +18,12 @@ export class CreateTaskDto {
   @IsInt({
     each: true,
   })
-  categories: number[];
+  @Optional()
+  categories?: number[];
 
   @IsInt({
     each: true,
   })
-  labels: number[];
+  @Optional()
+  labels?: number[];
 }
