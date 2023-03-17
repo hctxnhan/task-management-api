@@ -6,10 +6,12 @@ import {
   ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
 } from 'typeorm';
 import { Task } from './task.entity';
 import { User } from './user.entity';
 
+@Unique('shouldBeUnique', ['name', 'userId'])
 @Entity()
 export class Label implements IUserOwnResource {
   @PrimaryGeneratedColumn()

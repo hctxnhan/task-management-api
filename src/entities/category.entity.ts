@@ -19,11 +19,11 @@ export class Category implements IUserOwnResource {
   name: string;
 
   @ManyToMany(() => Task, (task) => task.categories)
-  tasks: Task[];
+  tasks?: Task[];
 
   @JoinTable()
   @ManyToOne(() => User, (user) => user.categories)
-  user: User;
+  user?: User;
 
   @Column()
   userId: number;

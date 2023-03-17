@@ -6,9 +6,10 @@ import {
 import { isUserOwnResource } from '@/utils/user-own-resource.util';
 import {
   CanActivate,
-  Injectable,
   ExecutionContext,
   ForbiddenException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
@@ -22,8 +23,15 @@ export class UserOwnResourceGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
+    if (request.method === 'POST') {
+      return true;
+    }
+
     const user = request.user as User;
-    const resource = request.params['id'];
+    const resourceId = request.params['id'];
+    if (!resourceId) {
+      return true;
+    }
 
     const resourceType = this.reflector.get<EntityTarget<ObjectLiteral>>(
       'resourceType',
@@ -36,7 +44,11 @@ export class UserOwnResourceGuard implements CanActivate {
 
     const resourceInstance = await this.dataSource
       .getRepository(resourceType)
-      .findOne({ where: { id: resource } });
+      .findOne({ where: { id: resourceId } });
+
+    if (!resourceInstance) {
+      throw new NotFoundException('Resource not found');
+    }
 
     if (!resourceHasUserOwner(resourceInstance)) {
       return true;

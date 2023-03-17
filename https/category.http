@@ -1,0 +1,12 @@
+### get a category
+GET {{baseUrl}}/category/11
+Authorization: Bearer {{token}}
+
+### create a category
+POST {{baseUrl}}/category
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Category 1"
+}

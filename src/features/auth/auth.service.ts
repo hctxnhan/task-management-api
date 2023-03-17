@@ -21,13 +21,15 @@ export class AuthService {
       select: ['id', 'email', 'password'],
     });
 
+    if (!user) return null;
+
     const isValid = await checkPassword(plainPassword, user.password);
 
     if (isValid) {
       return user;
+    } else {
+      return null;
     }
-
-    return null;
   }
 
   async login(user: User) {
