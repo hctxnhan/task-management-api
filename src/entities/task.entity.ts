@@ -35,7 +35,7 @@ export class Task implements IUserOwnResource {
 
   @JoinTable()
   @ManyToOne(() => User, (user) => user.tasks)
-  user: User;
+  user?: User;
 
   @Column()
   userId: number;
@@ -44,11 +44,11 @@ export class Task implements IUserOwnResource {
   @ManyToMany(() => Label, (label) => label.tasks, {
     eager: true,
   })
-  labels: Label[];
+  labels?: Label[];
 
   @JoinTable()
   @ManyToMany(() => Category, (category) => category.tasks, {
     eager: true,
   })
-  categories: Category[];
+  categories?: Category[];
 }

@@ -5,14 +5,14 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { environmentConfig } from './config/environment';
 // import { MockDatabaseModule } from './mock-database/mock-database.module';
-import { TypeOrmConfigServiceService } from './type-orm-config-service/type-orm-config-service.service';
-import { TaskModule } from './features/task/task.module';
-import { UserModule } from './features/user/user.module';
-import { LabelModule } from './features/label/label.module';
-import { CategoryModule } from './features/category/category.module';
-import { AuthModule } from './features/auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { AuthModule } from './features/auth/auth.module';
+import { CategoryModule } from './features/category/category.module';
+import { LabelModule } from './features/label/label.module';
+import { TaskModule } from './features/task/task.module';
+import { UserModule } from './features/user/user.module';
+import { TypeOrmConfigServiceService } from './type-orm-config-service/type-orm-config-service.service';
 
 @Module({
   imports: [

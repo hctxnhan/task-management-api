@@ -1,0 +1,31 @@
+### create label
+POST {{baseUrl}}/label HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Learn English",
+    "color": "#602173"
+}
+
+### get label
+GET {{baseUrl}}/label/43 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Delete label
+DELETE {{baseUrl}}/label/42 HTTP/1.1
+Authorization: Bearer {{token}}
+
+### update label
+PATCH {{baseUrl}}/label/41 HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "name": "Label edited"
+}
+
+### get all labels
+GET {{baseUrl}}/label HTTP/1.1
+Authorization: Bearer {{token}}

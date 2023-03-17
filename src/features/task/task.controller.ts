@@ -45,13 +45,11 @@ export class TaskController {
 
   @Delete(':id')
   remove(@Param('id') id: number) {
-    return this.taskService.remove(+id);
+    return this.taskService.remove(id);
   }
 
   @Patch(':id/status')
-  updateStatus(@Param('id') id: number, @Body() status: TaskStatus) {
-    return this.taskService.update(+id, {
-      status,
-    });
+  updateStatus(@Param('id') id: number, @Body('status') status: TaskStatus) {
+    return this.taskService.update(id, { status });
   }
 }

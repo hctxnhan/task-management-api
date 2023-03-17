@@ -1,3 +1,5 @@
+import { Category } from '@/entities/category.entity';
+import { Label } from '@/entities/label.entity';
 import { Task } from '@/entities/task.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,7 +14,27 @@ export class TaskService {
   ) {}
 
   create(createTaskDto: CreateTaskDto) {
-    return 'This action adds a new task';
+    const { description, dueDate, title, categories, labels } = createTaskDto;
+    const task = new Task();
+    task.dueDate = new Date(dueDate);
+    task.description = description;
+    task.title = title;
+
+    task.categories = categories.map((category) => {
+      const categoryEntity = new Category();
+      categoryEntity.id = category;
+
+      return categoryEntity;
+    });
+
+    task.labels = labels.map((label) => {
+      const labelEntity = new Label();
+      labelEntity.id = label;
+
+      return labelEntity;
+    });
+
+    return this.taskRepository.save(task);
   }
 
   findMany(options: FindManyOptions) {
@@ -34,6 +56,6 @@ export class TaskService {
   }
 
   remove(id: number) {
-    return `This action removes a #${id} task`;
+    return {};
   }
 }

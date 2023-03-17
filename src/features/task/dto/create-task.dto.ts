@@ -1,6 +1,5 @@
-import { TaskStatus } from '@/types/enum';
 import { Optional } from '@nestjs/common/decorators';
-import { IsDateString, IsEnum, IsInt, IsString } from 'class-validator';
+import { IsDateString, IsInt, IsString } from 'class-validator';
 
 export class CreateTaskDto {
   @IsString()
@@ -8,9 +7,6 @@ export class CreateTaskDto {
 
   @IsString()
   description: string;
-
-  @IsEnum(TaskStatus)
-  status: TaskStatus;
 
   @IsDateString()
   dueDate: string;
