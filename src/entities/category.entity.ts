@@ -1,3 +1,4 @@
+import { IUserOwnResource } from '@/types/user-own-resource.interface';
 import {
   Entity,
   Column,
@@ -10,7 +11,7 @@ import { Task } from './task.entity';
 import { User } from './user.entity';
 
 @Entity()
-export class Category {
+export class Category implements IUserOwnResource {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -23,4 +24,7 @@ export class Category {
   @JoinTable()
   @ManyToOne(() => User, (user) => user.categories)
   user: User;
+
+  @Column()
+  userId: number;
 }

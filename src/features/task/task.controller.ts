@@ -1,21 +1,24 @@
+import { CurrentResource } from '@/common/decorators/current-resource.decorator';
+import { SetResourceType } from '@/common/decorators/resource-type.decorator';
+import { UserOwnResourceGuard } from '@/common/guards/user-own-resource.guard';
+import { Task } from '@/entities/task.entity';
+import { TaskStatus } from '@/types/enum';
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UnauthorizedException,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import { TaskStatus } from '@/types/enum';
-import { isUserOwnResource } from '@/utils/user-own-resource.util';
-import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { User } from '@/entities/user.entity';
+import { TaskService } from './task.service';
 
+@SetResourceType(Task)
+@UseGuards(UserOwnResourceGuard)
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
@@ -31,14 +34,7 @@ export class TaskController {
   }
 
   @Get(':id')
-  async findOne(@CurrentUser() user: User, @Param('id') id: number) {
-    const task = await this.taskService.findOne(+id);
-    if (!isUserOwnResource(user, task)) {
-      throw new UnauthorizedException(
-        'You are not allowed to access this resource',
-      );
-    }
-
+  async findOne(@Param('id') id: number, @CurrentResource() task: Task) {
     return task;
   }
 

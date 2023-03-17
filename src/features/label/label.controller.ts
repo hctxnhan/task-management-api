@@ -1,16 +1,22 @@
+import { SetResourceType } from '@/common/decorators/resource-type.decorator';
+import { UserOwnResourceGuard } from '@/common/guards/user-own-resource.guard';
+import { Label } from '@/entities/label.entity';
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
 } from '@nestjs/common';
-import { LabelService } from './label.service';
 import { CreateLabelDto } from './dto/create-label.dto';
 import { UpdateLabelDto } from './dto/update-label.dto';
+import { LabelService } from './label.service';
 
+@SetResourceType(Label)
+@UseGuards(UserOwnResourceGuard)
 @Controller('label')
 export class LabelController {
   constructor(private readonly labelService: LabelService) {}
