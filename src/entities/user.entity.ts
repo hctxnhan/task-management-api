@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Category } from './category.entity';
 import { Label } from './label.entity';
 import { Task } from './task.entity';
 
@@ -33,6 +34,6 @@ export class User {
   @OneToMany(() => Label, (label) => label.user)
   labels?: Label[];
 
-  @OneToMany(() => Label, (category) => category.user)
-  categories?: Label[];
+  @OneToMany(() => Category, (category) => category.user)
+  categories?: Category[];
 }

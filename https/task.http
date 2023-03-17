@@ -1,3 +1,44 @@
 ### Get task
-GET {{baseUrl}}/task/1 HTTP/1.1
+GET {{baseUrl}}/task/25 HTTP/1.1
 Authorization: Bearer {{token}}
+
+### Create task
+POST {{baseUrl}}/task HTTP/1.1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "title": "Task 2",
+    "description": "Task 2 description",
+    "categoryId": 11,
+    "labels": [
+        11,
+        12,
+        13
+    ],
+    "dueDate": "2020-01-01"
+}
+
+### Get all task
+GET {{baseUrl}}/task HTTP/1.1
+Authorization: Bearer {{token}}
+
+### Update task status
+PATCH {{baseUrl}}/task/25/status HTTP/1.1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "status": "IN_PROGRESS"
+}
+
+### Update task
+PATCH {{baseUrl}}/task/25 HTTP/1.1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "labels": [
+        11
+    ]
+}

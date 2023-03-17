@@ -1,11 +1,11 @@
 import { IUserOwnResource } from '@/types/user-own-resource.interface';
 import {
-  Entity,
   Column,
-  PrimaryGeneratedColumn,
-  ManyToMany,
+  Entity,
   JoinTable,
   ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Task } from './task.entity';
 import { User } from './user.entity';
@@ -18,7 +18,7 @@ export class Category implements IUserOwnResource {
   @Column()
   name: string;
 
-  @ManyToMany(() => Task, (task) => task.categories)
+  @OneToMany(() => Task, (task) => task.category)
   tasks?: Task[];
 
   @JoinTable()

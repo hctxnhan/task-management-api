@@ -11,11 +11,9 @@ export class CreateTaskDto {
   @IsDateString()
   dueDate: string;
 
-  @IsInt({
-    each: true,
-  })
+  @IsInt()
   @Optional()
-  categories?: number[];
+  categoryId?: number;
 
   @IsInt({
     each: true,
