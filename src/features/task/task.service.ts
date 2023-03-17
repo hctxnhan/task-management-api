@@ -1,9 +1,11 @@
-import { Category } from '@/entities/category.entity';
 import { Label } from '@/entities/label.entity';
 import { Task } from '@/entities/task.entity';
-import { Injectable } from '@nestjs/common';
+import { User } from '@/entities/user.entity';
+import { TaskStatus } from '@/types/enum';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
+import { UserService } from '../user/user.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
@@ -11,21 +13,29 @@ import { UpdateTaskDto } from './dto/update-task.dto';
 export class TaskService {
   constructor(
     @InjectRepository(Task) private taskRepository: Repository<Task>,
+    private readonly userService: UserService,
   ) {}
 
-  create(createTaskDto: CreateTaskDto) {
-    const { description, dueDate, title, categories, labels } = createTaskDto;
+  async create(createTaskDto: CreateTaskDto, user: User) {
+    const { description, dueDate, title, categoryId, labels } = createTaskDto;
+
+    const isValid = await this.userService.categoryAndLabelsIsValid(
+      user.id,
+      labels,
+      categoryId,
+    );
+
+    if (!isValid) {
+      throw new NotFoundException('Invalid category or labels');
+    }
+
     const task = new Task();
     task.dueDate = new Date(dueDate);
     task.description = description;
     task.title = title;
-
-    task.categories = categories.map((category) => {
-      const categoryEntity = new Category();
-      categoryEntity.id = category;
-
-      return categoryEntity;
-    });
+    task.status = TaskStatus.TODO;
+    task.userId = user.id;
+    task.categoryId = categoryId;
 
     task.labels = labels.map((label) => {
       const labelEntity = new Label();
@@ -37,12 +47,8 @@ export class TaskService {
     return this.taskRepository.save(task);
   }
 
-  findMany(options: FindManyOptions) {
-    return this.taskRepository.find(options);
-  }
-
-  findAll() {
-    return this.findMany({});
+  findAll(filter: FindManyOptions) {
+    return this.taskRepository.find(filter);
   }
 
   findOne(id: number) {
@@ -51,11 +57,15 @@ export class TaskService {
     });
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    return `This action updates a #${id} task`;
+  update(id: number, updateTaskDto: UpdateTaskDto, currentTask: Task) {
+    throw new Error('Method not implemented.');
+  }
+
+  updateStatus(id: number, status: TaskStatus) {
+    this.taskRepository.update(id, { status });
   }
 
   remove(id: number) {
-    return {};
+    return this.taskRepository.delete(id);
   }
 }

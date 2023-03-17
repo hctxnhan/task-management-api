@@ -4,7 +4,7 @@ import { Task } from '@/entities/task.entity';
 import { User } from '@/entities/user.entity';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { faker } from '@faker-js/faker';
 @Injectable()
 export class MockDatabaseService implements OnModuleInit {
@@ -15,6 +15,7 @@ export class MockDatabaseService implements OnModuleInit {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Label)
     private readonly labelRepository: Repository<Label>,
+    private readonly dataSource: DataSource,
   ) {}
 
   private userList: User[];
@@ -32,7 +33,7 @@ export class MockDatabaseService implements OnModuleInit {
   }
 
   private randomIndex(max: number) {
-    return Math.floor(Math.random() * max);
+    return Math.ceil(Math.random() * max);
   }
 
   private async mockUsers() {
@@ -57,11 +58,9 @@ export class MockDatabaseService implements OnModuleInit {
       task.description = faker.lorem.paragraph();
       task.dueDate = faker.date.future();
 
-      task.user = this.userList[this.randomIndex(this.userList.length)];
+      task.userId = this.randomIndex(this.userList.length);
       task.labels = [this.labelList[this.randomIndex(this.labelList.length)]];
-      task.categories = [
-        this.categoryList[this.randomIndex(this.categoryList.length)],
-      ];
+      task.categoryId = this.randomIndex(this.categoryList.length);
       tasks.push(task);
     }
 
@@ -85,7 +84,7 @@ export class MockDatabaseService implements OnModuleInit {
     const mockCategories = mockCategoriesName.map((name) => {
       const category = new Category();
       category.name = name;
-      category.user = this.userList[this.randomIndex(this.userList.length)];
+      category.userId = this.randomIndex(this.userList.length);
       return category;
     });
     this.categoryList = await this.categoryRepository.save(mockCategories);
@@ -108,7 +107,7 @@ export class MockDatabaseService implements OnModuleInit {
       const label = new Label();
       label.name = name;
       label.color = faker.internet.color();
-      label.user = this.userList[this.randomIndex(this.userList.length)];
+      label.userId = this.randomIndex(this.userList.length);
       return label;
     });
 

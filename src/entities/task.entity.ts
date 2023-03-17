@@ -1,12 +1,12 @@
 import { TaskStatus } from '@/types/enum';
 import { IUserOwnResource } from '@/types/user-own-resource.interface';
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
-  ManyToOne,
-  ManyToMany,
+  Entity,
   JoinTable,
+  ManyToMany,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Label } from './label.entity';
@@ -46,9 +46,11 @@ export class Task implements IUserOwnResource {
   })
   labels?: Label[];
 
-  @JoinTable()
-  @ManyToMany(() => Category, (category) => category.tasks, {
+  @ManyToOne(() => Category, (category) => category.tasks, {
     eager: true,
   })
-  categories?: Category[];
+  category?: Category;
+
+  @Column()
+  categoryId: number;
 }

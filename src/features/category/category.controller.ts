@@ -9,13 +9,13 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
   UseGuards,
-  HttpCode,
 } from '@nestjs/common';
-import { HttpStatusCode } from 'axios';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { ReturnedCategoryDto } from './dto/returned-category.dto';
@@ -66,7 +66,7 @@ export class CategoryController {
     });
   }
 
-  @HttpCode(HttpStatusCode.NoContent)
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async remove(@Param('id') id: number) {
     await this.categoryService.remove(id);

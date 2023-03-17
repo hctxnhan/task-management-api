@@ -10,12 +10,12 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { HttpStatusCode } from 'axios';
 import { CreateLabelDto } from './dto/create-label.dto';
 import { ReturnedLabelDto } from './dto/returned-label.dto';
 import { UpdateLabelDto } from './dto/update-label.dto';
@@ -63,7 +63,7 @@ export class LabelController {
   }
 
   @Delete(':id')
-  @HttpCode(HttpStatusCode.NoContent)
+  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: number) {
     return this.labelService.remove(id);
   }
