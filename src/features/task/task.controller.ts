@@ -4,7 +4,6 @@ import { SetResourceType } from '@/common/decorators/resource-type.decorator';
 import { UserOwnResourceGuard } from '@/common/guards/user-own-resource.guard';
 import { Task } from '@/entities/task.entity';
 import { User } from '@/entities/user.entity';
-import { TaskStatus } from '@/types/enum';
 import {
   Body,
   Controller,
@@ -18,6 +17,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { PriorityUpdateDto } from './dto/priority-update-dto';
 import { ReturnedTaskDto } from './dto/returned-task.dto';
 import { StatusUpdateDto } from './dto/status-update.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -76,6 +76,17 @@ export class TaskController {
     await this.taskService.updateStatus(id, statusUpdateDto.status);
     return {
       message: 'Task status updated',
+    };
+  }
+
+  @Patch(':id/priority')
+  async updatePriority(
+    @Param('id') id: number,
+    @Body() priorityUpdateDto: PriorityUpdateDto,
+  ) {
+    await this.taskService.updatePriority(id, priorityUpdateDto.priority);
+    return {
+      message: 'Task priority updated',
     };
   }
 }

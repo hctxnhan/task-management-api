@@ -1,4 +1,4 @@
-import { TaskStatus } from '@/types/enum';
+import { TaskPriority, TaskStatus } from '@/types/enum';
 import { IUserOwnResource } from '@/types/user-own-resource.interface';
 import {
   Column,
@@ -29,6 +29,13 @@ export class Task implements IUserOwnResource {
     default: TaskStatus.TODO,
   })
   status: TaskStatus;
+
+  @Column({
+    type: 'enum',
+    enum: TaskPriority,
+    default: TaskPriority.NONE,
+  })
+  priority: TaskPriority;
 
   @Column()
   dueDate: Date;
