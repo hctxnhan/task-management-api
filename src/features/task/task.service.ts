@@ -1,7 +1,7 @@
 import { Label } from '@/entities/label.entity';
 import { Task } from '@/entities/task.entity';
 import { User } from '@/entities/user.entity';
-import { TaskStatus } from '@/types/enum';
+import { TaskPriority, TaskStatus } from '@/types/enum';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
@@ -17,7 +17,8 @@ export class TaskService {
   ) {}
 
   async create(createTaskDto: CreateTaskDto, user: User) {
-    const { description, dueDate, title, categoryId, labels } = createTaskDto;
+    const { description, dueDate, title, categoryId, labels, priority } =
+      createTaskDto;
 
     const isValid = await this.userService.categoryAndLabelsIsValid(
       user.id,
@@ -36,6 +37,7 @@ export class TaskService {
     task.status = TaskStatus.TODO;
     task.userId = user.id;
     task.categoryId = categoryId;
+    task.priority = priority;
 
     task.labels = labels.map((label) => {
       const labelEntity = new Label();
@@ -63,6 +65,10 @@ export class TaskService {
 
   updateStatus(id: number, status: TaskStatus) {
     this.taskRepository.update(id, { status });
+  }
+
+  updatePriority(id: number, priority: TaskPriority) {
+    this.taskRepository.update(id, { priority });
   }
 
   remove(id: number) {

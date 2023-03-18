@@ -1,5 +1,12 @@
+import { TaskPriority } from '@/types/enum';
 import { Optional } from '@nestjs/common/decorators';
-import { IsDateString, IsInt, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsString,
+} from 'class-validator';
 
 export class CreateTaskDto {
   @IsString()
@@ -14,6 +21,11 @@ export class CreateTaskDto {
   @IsInt()
   @Optional()
   categoryId?: number;
+
+  @IsNumber()
+  @IsEnum(TaskPriority)
+  @Optional()
+  priority?: TaskPriority;
 
   @IsInt({
     each: true,
