@@ -22,7 +22,10 @@ export class CreateTaskDto {
   @Optional()
   categoryId?: number;
 
+  @Optional()
   @IsNumber()
+  duration?: number;
+
   @IsEnum(TaskPriority)
   @Optional()
   priority?: TaskPriority;

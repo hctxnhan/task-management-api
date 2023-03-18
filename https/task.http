@@ -8,15 +8,15 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-    "title": "Task 2",
+    "title": "Task 4",
     "description": "Task 2 description",
-    "categoryId": 11,
+    "categoryId": 52,
     "labels": [
-        11,
-        12,
-        13
+        71, 72
     ],
-    "dueDate": "2020-01-01"
+    "duration": 2,
+    "priority": 3,	
+    "dueDate": "2023-04-01"
 }
 
 ### Get all task
@@ -42,3 +42,7 @@ Content-Type: application/json
         11
     ]
 }
+
+### Auto schedule task
+GET {{baseUrl}}/task/auto-schedule HTTP/1.1
+Authorization: Bearer {{token}}

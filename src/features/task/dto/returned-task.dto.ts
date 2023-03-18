@@ -23,12 +23,14 @@ export class ReturnedTaskDto {
   status: TaskStatus;
 
   @Expose()
+  duration: number;
+
+  @Expose()
   @Type(() => ReturnedLabelDto)
   labels: Label[];
 
   @Expose()
-  @Type(() => ReturnedCategoryDto)
-  category: Category;
+  categoryId: number;
 
   @Expose()
   priority: TaskPriority;

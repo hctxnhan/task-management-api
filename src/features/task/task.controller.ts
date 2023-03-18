@@ -29,6 +29,14 @@ import { TaskService } from './task.service';
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  @Get('auto-schedule')
+  async autoSchedule(@CurrentUser() user: User) {
+    const tasks = await this.taskService.getAutoSchedule(user);
+    if (tasks instanceof Array)
+      return tasks.map((task) => new ReturnedTaskDto(task));
+    return tasks;
+  }
+
   @Post()
   async create(
     @Body() createTaskDto: CreateTaskDto,

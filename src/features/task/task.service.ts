@@ -5,6 +5,7 @@ import { TaskPriority, TaskStatus } from '@/types/enum';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
+import { TaskScheduler } from '../task-scheduler/task-scheduler';
 import { UserService } from '../user/user.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -14,6 +15,7 @@ export class TaskService {
   constructor(
     @InjectRepository(Task) private taskRepository: Repository<Task>,
     private readonly userService: UserService,
+    private readonly taskSchedulerService: TaskScheduler,
   ) {}
 
   async create(createTaskDto: CreateTaskDto, user: User) {
@@ -73,5 +75,18 @@ export class TaskService {
 
   remove(id: number) {
     return this.taskRepository.delete(id);
+  }
+
+  async getAutoSchedule(user: User) {
+    const tasks = await this.findAll({
+      where: {
+        userId: user.id,
+      },
+      relations: {
+        labels: true,
+      },
+    });
+
+    return this.taskSchedulerService.schedule(tasks);
   }
 }
