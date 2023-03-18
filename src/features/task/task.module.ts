@@ -4,10 +4,20 @@ import { TaskController } from './task.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Task } from '@/entities/task.entity';
 import { UserModule } from '../user/user.module';
+import { TaskScheduler } from '../task-scheduler/task-scheduler';
+import { TASK_SCHEDULER_STRATEGY } from '@/common/tokens/tokens';
+import { TaskSchedulerStrategy } from '../task-scheduler/interfaces/task-scheduler-strategy.enum';
 
 @Module({
   imports: [UserModule, TypeOrmModule.forFeature([Task])],
   controllers: [TaskController],
-  providers: [TaskService],
+  providers: [
+    TaskService,
+    TaskScheduler,
+    {
+      provide: TASK_SCHEDULER_STRATEGY,
+      useValue: TaskSchedulerStrategy.BASED_ON_TASK_PRIORITY,
+    },
+  ],
 })
 export class TaskModule {}

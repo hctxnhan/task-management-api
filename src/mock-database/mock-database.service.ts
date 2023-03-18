@@ -24,6 +24,11 @@ export class MockDatabaseService implements OnModuleInit {
 
   async onModuleInit() {
     this.mockDatabase();
+    this.dataSource.createEntityManager().query(`TRUNCATE TABLE "user" CASCADE;
+    TRUNCATE TABLE "task" CASCADE;
+    TRUNCATE TABLE "category" CASCADE;
+    TRUNCATE TABLE "label" CASCADE;
+    TRUNCATE TABLE "task_labels_label" CASCADE;`);
   }
 
   private async mockDatabase() {
@@ -33,7 +38,7 @@ export class MockDatabaseService implements OnModuleInit {
   }
 
   private randomIndex(max: number) {
-    return Math.ceil(Math.random() * max);
+    return Math.ceil(Math.random() * max - 1);
   }
 
   private async mockUsers() {
@@ -59,7 +64,7 @@ export class MockDatabaseService implements OnModuleInit {
       task.dueDate = faker.date.future();
 
       task.userId = this.randomIndex(this.userList.length);
-      task.labels = [this.labelList[this.randomIndex(this.labelList.length)]];
+      task.labels = [this.labelList[this.randomIndex(2)]];
       task.categoryId = this.randomIndex(this.categoryList.length);
       tasks.push(task);
     }
@@ -85,6 +90,7 @@ export class MockDatabaseService implements OnModuleInit {
       const category = new Category();
       category.name = name;
       category.userId = this.randomIndex(this.userList.length);
+      category.priority = this.randomIndex(10);
       return category;
     });
     this.categoryList = await this.categoryRepository.save(mockCategories);

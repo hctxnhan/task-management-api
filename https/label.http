@@ -4,7 +4,7 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "Learn English",
+    "name": "Category 3",
     "color": "#602173"
 }
 

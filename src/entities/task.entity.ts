@@ -37,6 +37,11 @@ export class Task implements IUserOwnResource {
   })
   priority: TaskPriority;
 
+  @Column({
+    default: 1,
+  })
+  duration: number;
+
   @Column()
   dueDate: Date;
 

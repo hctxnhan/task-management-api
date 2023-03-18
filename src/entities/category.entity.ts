@@ -18,6 +18,11 @@ export class Category implements IUserOwnResource {
   @Column()
   name: string;
 
+  @Column({
+    default: 1,
+  })
+  priority: number;
+
   @OneToMany(() => Task, (task) => task.category)
   tasks?: Task[];
 
