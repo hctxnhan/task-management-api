@@ -14,6 +14,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -30,11 +31,13 @@ export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Get('auto-schedule')
-  async autoSchedule(@CurrentUser() user: User) {
-    const tasks = await this.taskService.getAutoSchedule(user);
-    if (tasks instanceof Array)
-      return tasks.map((task) => new ReturnedTaskDto(task));
-    return tasks;
+  async autoSchedule(@CurrentUser() user: User, @Query('hours') hours: number) {
+    const tasks = await this.taskService.getAutoSchedule(user, hours);
+    return {
+      tasks: tasks.map((task) => new ReturnedTaskDto(task)),
+      timeSpent: tasks.reduce((acc, task) => acc + task.duration, 0),
+      numOfTasks: tasks.length,
+    };
   }
 
   @Post()

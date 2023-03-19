@@ -13,6 +13,7 @@ import { LabelModule } from './features/label/label.module';
 import { TaskModule } from './features/task/task.module';
 import { UserModule } from './features/user/user.module';
 import { TypeOrmConfigServiceService } from './type-orm-config-service/type-orm-config-service.service';
+import { FreeTimeModule } from './features/free-time/free-time.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { TypeOrmConfigServiceService } from './type-orm-config-service/type-orm-
     LabelModule,
     CategoryModule,
     AuthModule,
+    FreeTimeModule,
   ],
   controllers: [AppController],
   providers: [

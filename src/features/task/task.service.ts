@@ -4,7 +4,7 @@ import { User } from '@/entities/user.entity';
 import { TaskPriority, TaskStatus } from '@/types/enum';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, MoreThan, Repository } from 'typeorm';
 import { TaskScheduler } from '../task-scheduler/task-scheduler';
 import { UserService } from '../user/user.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -77,16 +77,15 @@ export class TaskService {
     return this.taskRepository.delete(id);
   }
 
-  async getAutoSchedule(user: User) {
+  async getAutoSchedule(user: User, hours: number) {
     const tasks = await this.findAll({
       where: {
         userId: user.id,
-      },
-      relations: {
-        labels: true,
+        dueDate: MoreThan(new Date()),
+        status: TaskStatus.TODO,
       },
     });
 
-    return this.taskSchedulerService.schedule(tasks);
+    return this.taskSchedulerService.schedule(tasks, hours);
   }
 }
