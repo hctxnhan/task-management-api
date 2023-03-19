@@ -13,3 +13,13 @@ export enum TaskPriority {
   HIGH = 3,
   URGENT = 4,
 }
+
+export enum Weekday {
+  MONDAY = 0,
+  TUESDAY = 1,
+  WEDNESDAY = 2,
+  THURSDAY = 3,
+  FRIDAY = 4,
+  SATURDAY = 5,
+  SUNDAY = 6,
+}

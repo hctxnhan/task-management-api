@@ -23,10 +23,14 @@ export function getTaskScore(task: Task) {
     },
     {
       weight: 2,
-      limit: 30,
+      limit: 14,
     },
     {
       weight: 1,
+      limit: 30,
+    },
+    {
+      weight: 0.5,
       limit: Infinity,
     },
   ];

@@ -1,18 +1,11 @@
 import { Task } from '@/entities/task.entity';
-import { TimeSlot } from './time-slot.entity';
+import { FreeTimeBlock } from '@/entities/time-block.entity';
 
 export class ScheduleSlot {
   task: Task;
-  timeSlot: TimeSlot;
-  constructor(task: Task, freeTime: TimeSlot) {
+  timeSlot: FreeTimeBlock;
+  constructor(task: Task, freeTime: FreeTimeBlock) {
     this.task = task;
     this.timeSlot = freeTime;
-  }
-
-  get isValid() {
-    return (
-      this.task.dueDate.getTime() - this.timeSlot.end.getTime() >= 0 &&
-      this.timeSlot.duration >= this.task.duration
-    );
   }
 }

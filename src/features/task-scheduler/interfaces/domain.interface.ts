@@ -1,7 +1,7 @@
 import { Task } from '@/entities/task.entity';
-import { TimeSlot } from '../entities/time-slot.entity';
+import { FreeTimeBlock } from '@/entities/time-block.entity';
 
 export interface Domain {
   task: Task;
-  freeTimes: TimeSlot[];
+  freeTimes: FreeTimeBlock[];
 }

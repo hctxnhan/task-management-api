@@ -1,10 +1,6 @@
 import { TASK_SCHEDULER_STRATEGY } from '@/common/tokens/tokens';
 import { Task } from '@/entities/task.entity';
 import { Inject, Injectable } from '@nestjs/common';
-import { ScheduleSlot } from './entities/schedule-slot.entity';
-import { Schedule } from './entities/schedule.entity';
-import { TimeSlot } from './entities/time-slot.entity';
-import { Domain } from './interfaces/domain.interface';
 import { TaskSchedulerStrategy } from './interfaces/task-scheduler-strategy.enum';
 import { getTaskScore } from './utils/task-score.util';
 
@@ -19,87 +15,168 @@ export class TaskScheduler {
     this.strategy = taskSchedulerStrategy;
   }
 
-  getDomainOfTask(task: Task, domains: Domain[]): TimeSlot[] {
-    return (
-      domains.find((domain) => domain.task.id === task.id)?.freeTimes ?? []
-    );
+  private randomBit(): number {
+    return Math.round(Math.random());
   }
 
-  findDomain(task: Task, freeTimes: TimeSlot[]): Domain {
-    const timeSlots = freeTimes.filter((freeTime) => {
-      return freeTime.duration >= task.duration && freeTime.isValid;
-    });
-
-    return { task, freeTimes: timeSlots };
+  decodeSchedule(schedule: string, tasks: Task[]): Task[] {
+    const decodedSchedule: Task[] = [];
+    for (let i = 0; i < schedule.length; i++) {
+      if (schedule[i] === '1') {
+        decodedSchedule.push(tasks[i]);
+      }
+    }
+    return decodedSchedule;
   }
 
-  schedule(tasks: Task[], freeTimes?: TimeSlot[]): Schedule | null | Task[] {
-    if (this.strategy === TaskSchedulerStrategy.BASED_ON_TASK_PRIORITY) {
-      return this.sortTaskByScore(tasks);
+  fitnessFunction(schedule: Task[], limit: number): number {
+    const totalDuration = schedule.reduce((acc, task) => {
+      return acc + task.duration;
+    }, 0);
+    if (totalDuration > limit) {
+      return 0;
     }
 
-    const domains = tasks.map((task) => this.findDomain(task, freeTimes));
-    const schedule = new Schedule(tasks.length);
-    const result = this.backtrack(schedule, tasks, domains);
-    return result;
+    return schedule.reduce((acc, task) => {
+      return acc + getTaskScore(task);
+    }, 0);
   }
 
-  sortTaskByScore(tasks: Task[]): Task[] {
-    return [...tasks].sort((a, b) => {
-      return getTaskScore(b) - getTaskScore(a);
+  randomSchedule(tasks: Task[]): string {
+    let schedule = '';
+    tasks.forEach(() => {
+      schedule += this.randomBit();
     });
+    return schedule;
   }
 
-  backtrack(
-    schedule: Schedule,
-    tasks: Task[],
-    domains: Domain[],
-  ): Schedule | null {
-    if (!schedule) return null;
+  schedule(tasks: Task[], hours: number): Task[] {
+    const POPULATION_SIZE = 10;
+    const MAX_GENERATIONS = 10;
+    const MUTATION_RATE = 0.1;
 
-    if (schedule.isComplete()) return schedule;
+    let population = new Set<string>();
 
-    const unassignedTask = tasks.find((task) => {
-      return !schedule.doesTaskExist(task);
-    });
+    for (let i = 0; i < POPULATION_SIZE; i++) {
+      population.add(this.randomSchedule(tasks));
+    }
 
-    if (!unassignedTask) return schedule;
+    for (let i = 0; i < MAX_GENERATIONS; i++) {
+      if (population.size === 0) {
+        return [];
+      }
 
-    const task = unassignedTask as Task;
+      if (population.size === 1) {
+        break;
+      }
 
-    const possibleTimeSlots = this.getDomainOfTask(task, domains);
+      const fitnessScores: number[] = [];
+      population.forEach((schedule) => {
+        const decodedSchedule = this.decodeSchedule(schedule, tasks);
+        const fitnessScore = this.fitnessFunction(decodedSchedule, hours);
+        fitnessScores.push(fitnessScore);
+      });
 
-    for (let i = 0; i < possibleTimeSlots.length; i++) {
-      const valid = schedule.addScheduleSlot(
-        new ScheduleSlot(task, possibleTimeSlots[i]),
+      const totalFitnessScore = fitnessScores.reduce((acc, score) => {
+        return acc + score;
+      }, 0);
+
+      const filteredPopulation = new Set(
+        [...population]
+          .sort(
+            (a, b) =>
+              this.fitnessFunction(this.decodeSchedule(b, tasks), hours) -
+              this.fitnessFunction(this.decodeSchedule(a, tasks), hours),
+          )
+          .filter(
+            (_) =>
+              this.fitnessFunction(this.decodeSchedule(_, tasks), hours) >
+              0.1 * totalFitnessScore,
+          ),
       );
-      if (!valid) {
-        schedule.removeScheduleSlot(
-          new ScheduleSlot(task, possibleTimeSlots[i]),
-        );
-        continue;
-      }
 
-      if (this.constraints(schedule)) {
-        const result = this.backtrack(schedule, tasks, domains);
-        if (result) return result;
-      }
+      const newPopulation = new Set<string>(
+        [...filteredPopulation].slice(0, 2),
+      );
 
-      schedule.removeScheduleSlot(new ScheduleSlot(task, possibleTimeSlots[i]));
+      for (let j = 0; j < POPULATION_SIZE / 2 - 2; j++) {
+        const { parent1, parent2 } = this.chooseParent(filteredPopulation);
+
+        let { child1, child2 } = this.crossover(parent1, parent2);
+
+        child1 = Math.random() < MUTATION_RATE ? this.mutate(child1) : child1;
+        child2 = Math.random() < MUTATION_RATE ? this.mutate(child2) : child2;
+        newPopulation.add(child1);
+        newPopulation.add(child2);
+      }
+      population = newPopulation;
     }
 
-    return null;
+    let bestSchedule = Array.from(population)[0];
+
+    let bestFitnessScore = this.fitnessFunction(
+      this.decodeSchedule(bestSchedule, tasks),
+      hours,
+    );
+
+    population.forEach((schedule) => {
+      const fitnessScore = this.fitnessFunction(
+        this.decodeSchedule(schedule, tasks),
+        hours,
+      );
+      if (fitnessScore > bestFitnessScore) {
+        bestSchedule = schedule;
+        bestFitnessScore = fitnessScore;
+      }
+    });
+
+    const decodedSchedule = this.decodeSchedule(bestSchedule, tasks);
+    return decodedSchedule.sort((a, b) => getTaskScore(b) - getTaskScore(a));
   }
 
-  constraints(schedule: Schedule): boolean {
-    const scheduleSlots = schedule.sortScheduleSlot();
-    for (let i = 0; i < scheduleSlots.length - 1; i++) {
-      const current = scheduleSlots[i];
-      const next = scheduleSlots[i + 1];
+  crossover(
+    schedule1: string,
+    schedule2: string,
+  ): {
+    child1: string;
+    child2: string;
+  } {
+    const crossoverPoint = Math.floor(Math.random() * schedule1.length);
+    const newSchedule1 =
+      schedule1.slice(0, crossoverPoint) + schedule2.slice(crossoverPoint);
+    const newSchedule2 =
+      schedule2.slice(0, crossoverPoint) + schedule1.slice(crossoverPoint);
+    return {
+      child1: newSchedule1,
+      child2: newSchedule2,
+    };
+  }
 
-      if (getTaskScore(current.task) < getTaskScore(next.task)) return false;
+  mutate(schedule: string): string {
+    const mutationPoint = Math.floor(Math.random() * schedule.length);
+    const newSchedule =
+      schedule.slice(0, mutationPoint) +
+      (1 - Number(schedule[mutationPoint])) +
+      schedule.slice(mutationPoint + 1);
+    return newSchedule;
+  }
+
+  chooseParent(population: Set<string>): {
+    parent1: string;
+    parent2: string;
+  } {
+    const populationArray = [...population];
+    const parent1 =
+      populationArray[Math.floor(Math.random() * population.size)];
+    let parent2 = populationArray[Math.floor(Math.random() * population.size)];
+
+    while (parent2 === parent1) {
+      parent2 = populationArray[Math.floor(Math.random() * population.size)];
     }
 
-    return true;
+    return {
+      parent1,
+      parent2,
+    };
   }
 }
