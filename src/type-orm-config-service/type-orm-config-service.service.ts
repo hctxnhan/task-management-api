@@ -20,7 +20,6 @@ export class TypeOrmConfigServiceService implements TypeOrmOptionsFactory {
       database: this.configService.get<string>('database.database'),
       schema: this.configService.get<string>('database.schema'),
       synchronize: true,
-      logging: true,
       subscribers: [],
       entities: [User, Label, Task, Category],
     };

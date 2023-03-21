@@ -4,6 +4,74 @@ import { Inject, Injectable } from '@nestjs/common';
 import { TaskSchedulerStrategy } from './interfaces/task-scheduler-strategy.enum';
 import { getTaskScore } from './utils/task-score.util';
 
+interface TimeBlock {
+  start: Date;
+  end: Date;
+}
+
+interface Gene {
+  task: Task;
+  timeBlock: TimeBlock;
+}
+
+export interface Chromosome {
+  genes: Gene[];
+  fitnessScore: number;
+}
+
+type Population = Chromosome[];
+
+function randomElement(array: any[]): any {
+  return array[Math.floor(Math.random() * array.length)];
+}
+
+function getTimeBlockDuration(timeBlock: TimeBlock): number {
+  return timeBlock.end.getTime() - timeBlock.start.getTime();
+}
+
+const freeTimeBlocks: TimeBlock[] = [
+  {
+    start: new Date('2023-03-23T08:00:00.000Z'),
+    end: new Date('2023-03-23T12:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-03-25T13:00:00.000Z'),
+    end: new Date('2023-03-25T16:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-03-27T18:00:00.000Z'),
+    end: new Date('2023-03-27T22:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-03-28T10:00:00.000Z'),
+    end: new Date('2023-03-28T14:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-03-29T16:00:00.000Z'),
+    end: new Date('2023-03-29T18:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-03-30T11:00:00.000Z'),
+    end: new Date('2023-03-30T14:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-03-31T09:00:00.000Z'),
+    end: new Date('2023-03-31T12:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-04-01T14:00:00.000Z'),
+    end: new Date('2023-04-01T16:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-04-02T17:00:00.000Z'),
+    end: new Date('2023-04-02T20:00:00.000Z'),
+  },
+  {
+    start: new Date('2023-04-03T08:00:00.000Z'),
+    end: new Date('2023-04-03T11:00:00.000Z'),
+  },
+];
+
 @Injectable()
 export class TaskScheduler {
   strategy: TaskSchedulerStrategy;
@@ -15,8 +83,11 @@ export class TaskScheduler {
     this.strategy = taskSchedulerStrategy;
   }
 
-  private randomBit(): number {
-    return Math.round(Math.random());
+  private randomGene(tasks: Task[], freeTimeBlocks: TimeBlock[]): Gene {
+    return {
+      task: randomElement(tasks),
+      timeBlock: randomElement(freeTimeBlocks),
+    };
   }
 
   decodeSchedule(schedule: string, tasks: Task[]): Task[] {
@@ -29,149 +100,158 @@ export class TaskScheduler {
     return decodedSchedule;
   }
 
-  fitnessFunction(schedule: Task[], limit: number): number {
-    const totalDuration = schedule.reduce((acc, task) => {
-      return acc + task.duration;
-    }, 0);
-    if (totalDuration > limit) {
-      return 0;
+  fitnessFunction(genes: Gene[]): number {
+    let score = 0;
+
+    for (let i = 0; i < genes.length; i++) {
+      const gene = genes[i];
+      if (genes[i].task.duration > getTimeBlockDuration(genes[i].timeBlock)) {
+        continue;
+      }
+
+      for (let i = 0; i < genes.length; i++) {
+        if (
+          gene.task.id !== genes[i].task.id &&
+          gene.timeBlock.start.getTime() < genes[i].timeBlock.end.getTime() &&
+          gene.timeBlock.end.getTime() > genes[i].timeBlock.start.getTime()
+        ) {
+          continue;
+        }
+      }
+
+      if (gene.task.dueDate.getTime() < gene.timeBlock.end.getTime()) {
+        score -= 20;
+      }
+
+      score += getTaskScore(gene.task);
     }
 
-    return schedule.reduce((acc, task) => {
-      return acc + getTaskScore(task);
-    }, 0);
+    return score;
   }
 
-  randomSchedule(tasks: Task[]): string {
-    let schedule = '';
-    tasks.forEach(() => {
-      schedule += this.randomBit();
-    });
-    return schedule;
+  randomSchedule(tasks: Task[], freeTimeBlocks: TimeBlock[]): Chromosome {
+    const genes = freeTimeBlocks.map(() =>
+      this.randomGene(tasks, freeTimeBlocks),
+    );
+
+    const chromosome: Chromosome = {
+      genes,
+      fitnessScore: this.fitnessFunction(genes),
+    };
+
+    return chromosome;
   }
 
-  schedule(tasks: Task[], hours: number): Task[] {
-    const POPULATION_SIZE = 10;
-    const MAX_GENERATIONS = 10;
+  schedule(tasks: Task[], hours: number): Chromosome | null {
+    const POPULATION_SIZE = 100;
+    const MAX_GENERATIONS = 50;
     const MUTATION_RATE = 0.1;
 
-    let population = new Set<string>();
+    let population: Population = [];
 
     for (let i = 0; i < POPULATION_SIZE; i++) {
-      population.add(this.randomSchedule(tasks));
+      population.push(this.randomSchedule(tasks, freeTimeBlocks));
     }
 
     for (let i = 0; i < MAX_GENERATIONS; i++) {
-      if (population.size === 0) {
-        return [];
+      const averageFitnessScore =
+        population.reduce((acc, chromosome) => {
+          return acc + chromosome.fitnessScore;
+        }, 0) / POPULATION_SIZE;
+
+      const filteredPopulation = [...population]
+        .sort((a, b) => b.fitnessScore - a.fitnessScore)
+        .filter((_) => _.fitnessScore > 0.1 * averageFitnessScore);
+
+      if (filteredPopulation.length === 0) {
+        return null;
       }
 
-      if (population.size === 1) {
+      if (filteredPopulation.length === 1) {
         break;
       }
 
-      const fitnessScores: number[] = [];
-      population.forEach((schedule) => {
-        const decodedSchedule = this.decodeSchedule(schedule, tasks);
-        const fitnessScore = this.fitnessFunction(decodedSchedule, hours);
-        fitnessScores.push(fitnessScore);
-      });
-
-      const totalFitnessScore = fitnessScores.reduce((acc, score) => {
-        return acc + score;
-      }, 0);
-
-      const filteredPopulation = new Set(
-        [...population]
-          .sort(
-            (a, b) =>
-              this.fitnessFunction(this.decodeSchedule(b, tasks), hours) -
-              this.fitnessFunction(this.decodeSchedule(a, tasks), hours),
-          )
-          .filter(
-            (_) =>
-              this.fitnessFunction(this.decodeSchedule(_, tasks), hours) >
-              0.1 * totalFitnessScore,
-          ),
-      );
-
-      const newPopulation = new Set<string>(
-        [...filteredPopulation].slice(0, 2),
-      );
+      const newPopulation = [...filteredPopulation].slice(0, 2);
 
       for (let j = 0; j < POPULATION_SIZE / 2 - 2; j++) {
         const { parent1, parent2 } = this.chooseParent(filteredPopulation);
-
-        let { child1, child2 } = this.crossover(parent1, parent2);
-
-        child1 = Math.random() < MUTATION_RATE ? this.mutate(child1) : child1;
-        child2 = Math.random() < MUTATION_RATE ? this.mutate(child2) : child2;
-        newPopulation.add(child1);
-        newPopulation.add(child2);
+        const { child1, child2 } = this.crossover(parent1, parent2);
+        Math.random() < MUTATION_RATE && this.mutate(child1);
+        Math.random() < MUTATION_RATE && this.mutate(child2);
+        newPopulation.push(child1);
+        newPopulation.push(child2);
       }
       population = newPopulation;
     }
 
-    let bestSchedule = Array.from(population)[0];
+    const bestSchedule = population.sort(
+      (a, b) => b.fitnessScore - a.fitnessScore,
+    )[0];
 
-    let bestFitnessScore = this.fitnessFunction(
-      this.decodeSchedule(bestSchedule, tasks),
-      hours,
-    );
-
-    population.forEach((schedule) => {
-      const fitnessScore = this.fitnessFunction(
-        this.decodeSchedule(schedule, tasks),
-        hours,
-      );
-      if (fitnessScore > bestFitnessScore) {
-        bestSchedule = schedule;
-        bestFitnessScore = fitnessScore;
-      }
-    });
-
-    const decodedSchedule = this.decodeSchedule(bestSchedule, tasks);
-    return decodedSchedule.sort((a, b) => getTaskScore(b) - getTaskScore(a));
+    return bestSchedule;
   }
 
   crossover(
-    schedule1: string,
-    schedule2: string,
+    schedule1: Chromosome,
+    schedule2: Chromosome,
   ): {
-    child1: string;
-    child2: string;
+    child1: Chromosome;
+    child2: Chromosome;
   } {
-    const crossoverPoint = Math.floor(Math.random() * schedule1.length);
-    const newSchedule1 =
-      schedule1.slice(0, crossoverPoint) + schedule2.slice(crossoverPoint);
-    const newSchedule2 =
-      schedule2.slice(0, crossoverPoint) + schedule1.slice(crossoverPoint);
+    const crossoverPoint = Math.floor(Math.random() * schedule1.genes.length);
+    const schedule1TaskIds = schedule1.genes.map((_) => _.task.id);
+    const schedule2TaskIds = schedule2.genes.map((_) => _.task.id);
+
+    const child1 = schedule1.genes.slice(0, crossoverPoint);
+    const child2 = schedule2.genes.slice(0, crossoverPoint);
+
+    for (let i = crossoverPoint; i < schedule2.genes.length; i++) {
+      if (schedule1TaskIds.includes(schedule2.genes[i].task.id)) {
+        continue;
+      }
+      child1.push(schedule2.genes[i]);
+    }
+
+    for (let i = crossoverPoint; i < schedule1.genes.length; i++) {
+      if (schedule2TaskIds.includes(schedule1.genes[i].task.id)) {
+        continue;
+      }
+      child2.push(schedule1.genes[i]);
+    }
+
     return {
-      child1: newSchedule1,
-      child2: newSchedule2,
+      child1: {
+        genes: child1,
+        fitnessScore: this.fitnessFunction(child1),
+      },
+      child2: {
+        genes: child2,
+        fitnessScore: this.fitnessFunction(child2),
+      },
     };
   }
 
-  mutate(schedule: string): string {
-    const mutationPoint = Math.floor(Math.random() * schedule.length);
-    const newSchedule =
-      schedule.slice(0, mutationPoint) +
-      (1 - Number(schedule[mutationPoint])) +
-      schedule.slice(mutationPoint + 1);
-    return newSchedule;
+  mutate(schedule: Chromosome) {
+    const genes = schedule.genes;
+    const mutationPoint = randomElement(schedule.genes);
+    schedule.genes[mutationPoint] = this.randomGene(
+      genes.map((_) => _.task),
+      freeTimeBlocks,
+    );
   }
 
-  chooseParent(population: Set<string>): {
-    parent1: string;
-    parent2: string;
+  chooseParent(population: Population): {
+    parent1: Chromosome;
+    parent2: Chromosome;
   } {
     const populationArray = [...population];
     const parent1 =
-      populationArray[Math.floor(Math.random() * population.size)];
-    let parent2 = populationArray[Math.floor(Math.random() * population.size)];
+      populationArray[Math.floor(Math.random() * population.length)];
+    let parent2 =
+      populationArray[Math.floor(Math.random() * population.length)];
 
     while (parent2 === parent1) {
-      parent2 = populationArray[Math.floor(Math.random() * population.size)];
+      parent2 = populationArray[Math.floor(Math.random() * population.length)];
     }
 
     return {

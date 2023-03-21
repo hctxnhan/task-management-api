@@ -63,9 +63,12 @@ export class MockDatabaseService implements OnModuleInit {
       task.description = faker.lorem.paragraph();
       task.dueDate = faker.date.future();
 
-      task.userId = this.randomIndex(this.userList.length);
+      task.user = this.userList[this.randomIndex(this.userList.length)];
       task.labels = [this.labelList[this.randomIndex(2)]];
-      task.categoryId = this.randomIndex(this.categoryList.length);
+
+      task.category =
+        this.categoryList[this.randomIndex(this.categoryList.length)];
+
       tasks.push(task);
     }
 
@@ -89,7 +92,7 @@ export class MockDatabaseService implements OnModuleInit {
     const mockCategories = mockCategoriesName.map((name) => {
       const category = new Category();
       category.name = name;
-      category.userId = this.randomIndex(this.userList.length);
+      category.user = this.userList[this.randomIndex(this.userList.length)];
       category.priority = this.randomIndex(10);
       return category;
     });
@@ -113,7 +116,7 @@ export class MockDatabaseService implements OnModuleInit {
       const label = new Label();
       label.name = name;
       label.color = faker.internet.color();
-      label.userId = this.randomIndex(this.userList.length);
+      label.user = this.userList[this.randomIndex(this.userList.length)];
       return label;
     });
 

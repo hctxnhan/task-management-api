@@ -33,10 +33,16 @@ export class TaskController {
   @Get('auto-schedule')
   async autoSchedule(@CurrentUser() user: User, @Query('hours') hours: number) {
     const tasks = await this.taskService.getAutoSchedule(user, hours);
+    if (!tasks) return null;
+
     return {
-      tasks: tasks.map((task) => new ReturnedTaskDto(task)),
-      timeSpent: tasks.reduce((acc, task) => acc + task.duration, 0),
-      numOfTasks: tasks.length,
+      tasks: tasks.genes.map((task) => ({
+        task: new ReturnedTaskDto(task.task),
+        start: task.timeBlock.start,
+        end: task.timeBlock.end,
+      })),
+      timeSpent: tasks.genes.reduce((acc, task) => acc + task.task.duration, 0),
+      numOfTasks: tasks.genes.length,
     };
   }
 
