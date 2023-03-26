@@ -23,3 +23,9 @@ export enum Weekday {
   SATURDAY = 5,
   SUNDAY = 6,
 }
+
+export enum JoinGroupInvitationStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}

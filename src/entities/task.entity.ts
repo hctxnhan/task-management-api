@@ -9,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Category } from './category.entity';
+import { Group } from './group.entity';
 import { Label } from './label.entity';
 import { User } from './user.entity';
 
@@ -65,4 +66,10 @@ export class Task implements IUserOwnResource {
 
   @Column()
   categoryId: number;
+
+  @ManyToOne(() => User, (user) => user.assignedTasks)
+  assignee?: User;
+
+  @ManyToOne(() => Group, (group) => group.tasks)
+  group?: Group;
 }

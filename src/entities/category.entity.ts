@@ -7,6 +7,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Group } from './group.entity';
 import { Task } from './task.entity';
 import { User } from './user.entity';
 
@@ -25,6 +26,9 @@ export class Category implements IUserOwnResource {
 
   @OneToMany(() => Task, (task) => task.category)
   tasks?: Task[];
+
+  @ManyToOne(() => Group, (group) => group.categories)
+  group?: Group;
 
   @JoinTable()
   @ManyToOne(() => User, (user) => user.categories)

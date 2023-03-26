@@ -2,18 +2,20 @@ import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { environmentConfig } from './config/environment';
-import { MockDatabaseModule } from './mock-database/mock-database.module';
 import { APP_GUARD } from '@nestjs/core';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { environmentConfig } from './config/environment';
 import { AuthModule } from './features/auth/auth.module';
 import { CategoryModule } from './features/category/category.module';
+import { FreeTimeModule } from './features/free-time/free-time.module';
+import { GroupModule } from './features/group/group.module';
 import { LabelModule } from './features/label/label.module';
+import { NotificationModule } from './features/notification/notification.module';
 import { TaskModule } from './features/task/task.module';
 import { UserModule } from './features/user/user.module';
 import { TypeOrmConfigServiceService } from './type-orm-config-service/type-orm-config-service.service';
-import { FreeTimeModule } from './features/free-time/free-time.module';
+import { GroupJoinInvitationModule } from './features/group-join-invitation/group-join-invitation.module';
 
 @Module({
   imports: [
@@ -21,7 +23,6 @@ import { FreeTimeModule } from './features/free-time/free-time.module';
       imports: [ConfigModule],
       useClass: TypeOrmConfigServiceService,
     }),
-    // MockDatabaseModule,
     ConfigModule.forRoot({
       envFilePath: '.env.local',
       isGlobal: true,
@@ -33,6 +34,9 @@ import { FreeTimeModule } from './features/free-time/free-time.module';
     CategoryModule,
     AuthModule,
     FreeTimeModule,
+    GroupModule,
+    NotificationModule,
+    GroupJoinInvitationModule,
   ],
   controllers: [AppController],
   providers: [
