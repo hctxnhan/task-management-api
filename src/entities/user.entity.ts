@@ -1,5 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  OneToMany,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Category } from './category.entity';
+import { Group } from './group.entity';
 import { Label } from './label.entity';
 import { Task } from './task.entity';
 
@@ -31,9 +39,25 @@ export class User {
   @OneToMany(() => Task, (task) => task.user)
   tasks?: Task[];
 
-  @OneToMany(() => Label, (label) => label.user)
+  @OneToMany(() => Label, (label) => label.user, {
+    cascade: true,
+  })
   labels?: Label[];
 
-  @OneToMany(() => Category, (category) => category.user)
+  @OneToMany(() => Category, (category) => category.user, {
+    cascade: true,
+  })
   categories?: Category[];
+
+  @ManyToMany(() => Group, (group) => group.users)
+  @JoinTable()
+  groups?: Group[];
+
+  @OneToMany(() => Group, (group) => group.user, {
+    cascade: true,
+  })
+  ownedGroups?: Group[];
+
+  @OneToMany(() => Task, (task) => task.assignee)
+  assignedTasks?: Task[];
 }

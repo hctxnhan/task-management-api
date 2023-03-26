@@ -8,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
+import { Group } from './group.entity';
 import { Task } from './task.entity';
 import { User } from './user.entity';
 
@@ -32,4 +33,7 @@ export class Label implements IUserOwnResource {
 
   @Column()
   userId: number;
+
+  @ManyToOne(() => Group, (group) => group.labels)
+  group?: Group;
 }
