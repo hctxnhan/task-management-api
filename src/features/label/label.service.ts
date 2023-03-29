@@ -13,7 +13,11 @@ export class LabelService {
 
   async create(createLabelDto: CreateLabelDto, owner: User) {
     const existingLabel = await this.labelRepository.findOne({
-      where: { name: createLabelDto.name, userId: owner.id },
+      where: {
+        name: createLabelDto.name,
+        ownerId: owner.id,
+        groupId: createLabelDto.groupId || null,
+      },
     });
 
     if (existingLabel) {
@@ -23,8 +27,13 @@ export class LabelService {
     const label = new Label();
     label.name = createLabelDto.name;
     label.color = createLabelDto.color;
-    label.user = owner;
-    label.userId = owner.id;
+    label.owner = owner;
+
+    if (createLabelDto.groupId) {
+      label.groupId = createLabelDto.groupId;
+    }
+
+
     await this.labelRepository.save(label);
     return label;
   }

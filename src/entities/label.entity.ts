@@ -1,23 +1,19 @@
-import { IUserOwnResource } from '@/types/user-own-resource.interface';
 import {
   Column,
   Entity,
   JoinTable,
   ManyToMany,
   ManyToOne,
-  PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
 import { Group } from './group.entity';
+import { Resource } from './resource.entity';
 import { Task } from './task.entity';
 import { User } from './user.entity';
 
-@Unique('shouldBeUnique', ['name', 'userId'])
+// @Unique('shouldBeUnique', ['name', 'ownerId', 'groupId'])
 @Entity()
-export class Label implements IUserOwnResource {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Label extends Resource {
   @Column()
   name: string;
 
@@ -29,10 +25,7 @@ export class Label implements IUserOwnResource {
 
   @JoinTable()
   @ManyToOne(() => User, (user) => user.labels)
-  user: User;
-
-  @Column()
-  userId: number;
+  owner: User;
 
   @ManyToOne(() => Group, (group) => group.labels)
   group?: Group;

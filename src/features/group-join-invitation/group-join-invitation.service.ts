@@ -28,7 +28,7 @@ export class GroupJoinInvitationService {
     const group = await this.groupRepository.count({
       where: {
         id: createGroupJoinInvitationDto.groupId,
-        users: {
+        members: {
           id: user.id,
         },
       },
@@ -41,7 +41,7 @@ export class GroupJoinInvitationService {
 
     const invitation = new GroupJoinInvitation();
     invitation.groupId = createGroupJoinInvitationDto.groupId;
-    invitation.userId = user.id;
+    invitation.ownerId = user.id;
     invitation.status = JoinGroupInvitationStatus.PENDING;
   }
 
@@ -75,8 +75,8 @@ export class GroupJoinInvitationService {
     const group = await this.groupRepository.count({
       where: {
         id: invitation.groupId,
-        users: {
-          id: invitation.userId,
+        members: {
+          id: invitation.ownerId,
         },
       },
       relations: ['users'],

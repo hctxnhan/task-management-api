@@ -10,9 +10,7 @@ import { GroupJoinInvitation } from '@/entities/group-join-invitation';
 @Injectable()
 export class TypeOrmConfigServiceService implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
-  createTypeOrmOptions(
-    connectionName?: string,
-  ): TypeOrmModuleOptions | Promise<TypeOrmModuleOptions> {
+  createTypeOrmOptions(): TypeOrmModuleOptions | Promise<TypeOrmModuleOptions> {
     return {
       type: 'postgres',
       host: this.configService.get<string>('database.host'),

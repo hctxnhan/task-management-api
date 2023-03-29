@@ -1,7 +1,9 @@
+import {
+  SetAuthorization,
+  SetResourceType,
+} from '@/common/decorators/authorization.decorator';
 import { CurrentResource } from '@/common/decorators/current-resource.decorator';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { SetResourceType } from '@/common/decorators/resource-type.decorator';
-import { UserOwnResourceGuard } from '@/common/guards/user-own-resource.guard';
 import { Category } from '@/entities/category.entity';
 import { User } from '@/entities/user.entity';
 import {
@@ -14,15 +16,17 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
+import { IsNull } from 'typeorm';
+import { Permission } from '../authorization/permission.type';
+import { PermissionScope } from '../authorization/resource-owner.type';
+import { ResourceType } from '../authorization/resource-type.type';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { ReturnedCategoryDto } from './dto/returned-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
-@UseGuards(UserOwnResourceGuard)
-@SetResourceType(Category)
+@SetResourceType(ResourceType.CATEGORY)
 @Controller('category')
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
@@ -37,11 +41,13 @@ export class CategoryController {
     );
   }
 
+  @SetAuthorization(Permission.READ, PermissionScope.GROUP)
   @Get()
   async findAll(@CurrentUser() user: User) {
     const all = await this.categoryService.findAll({
       where: {
-        userId: user.id,
+        ownerId: user.id,
+        groupId: IsNull(),
       },
     });
 

@@ -1,7 +1,26 @@
+import { Permission } from '@/features/authorization/permission.type';
+import { PermissionScope } from '@/features/authorization/resource-owner.type';
+import { ResourceType } from '@/features/authorization/resource-type.type';
 import { SetMetadata } from '@nestjs/common';
 
-export const enum AuthorizationType {
+export const enum AuthorizationAttribute {
   IS_PUBLIC = 'IS_PUBLIC',
+  NEED_AUTHORIZED = 'NEED_AUTHORIZED',
+  RESOURCE_TYPE = 'RESOURCE_TYPE',
 }
 
-export const Public = () => SetMetadata(AuthorizationType.IS_PUBLIC, true);
+export const Public = () => SetMetadata(AuthorizationAttribute.IS_PUBLIC, true);
+
+export function SetResourceType(resourceType: ResourceType) {
+  return SetMetadata(AuthorizationAttribute.RESOURCE_TYPE, resourceType);
+}
+
+export function SetAuthorization(
+  permission: Permission,
+  scope: PermissionScope = PermissionScope.OWN,
+) {
+  return SetMetadata(AuthorizationAttribute.NEED_AUTHORIZED, {
+    permission,
+    scope,
+  });
+}

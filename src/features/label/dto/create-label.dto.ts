@@ -7,4 +7,6 @@ export class CreateLabelDto {
 
   @IsHexColor()
   color: string;
+
+  groupId?: number;
 }

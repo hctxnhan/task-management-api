@@ -8,7 +8,6 @@ import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { environmentConfig } from './config/environment';
 import { AuthModule } from './features/auth/auth.module';
 import { CategoryModule } from './features/category/category.module';
-import { FreeTimeModule } from './features/free-time/free-time.module';
 import { GroupModule } from './features/group/group.module';
 import { LabelModule } from './features/label/label.module';
 import { NotificationModule } from './features/notification/notification.module';
@@ -16,6 +15,7 @@ import { TaskModule } from './features/task/task.module';
 import { UserModule } from './features/user/user.module';
 import { TypeOrmConfigServiceService } from './type-orm-config-service/type-orm-config-service.service';
 import { GroupJoinInvitationModule } from './features/group-join-invitation/group-join-invitation.module';
+import { AuthorizationGuard } from './common/guards/authorization.guard';
 
 @Module({
   imports: [
@@ -33,7 +33,6 @@ import { GroupJoinInvitationModule } from './features/group-join-invitation/grou
     LabelModule,
     CategoryModule,
     AuthModule,
-    FreeTimeModule,
     GroupModule,
     NotificationModule,
     GroupJoinInvitationModule,
@@ -45,6 +44,10 @@ import { GroupJoinInvitationModule } from './features/group-join-invitation/grou
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthorizationGuard,
     },
   ],
 })

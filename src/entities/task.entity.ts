@@ -1,5 +1,4 @@
 import { TaskPriority, TaskStatus } from '@/types/enum';
-import { IUserOwnResource } from '@/types/user-own-resource.interface';
 import {
   Column,
   Entity,
@@ -11,10 +10,11 @@ import {
 import { Category } from './category.entity';
 import { Group } from './group.entity';
 import { Label } from './label.entity';
+import { Resource } from './resource.entity';
 import { User } from './user.entity';
 
 @Entity()
-export class Task implements IUserOwnResource {
+export class Task extends Resource {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -47,13 +47,6 @@ export class Task implements IUserOwnResource {
   dueDate: Date;
 
   @JoinTable()
-  @ManyToOne(() => User, (user) => user.tasks)
-  user?: User;
-
-  @Column()
-  userId: number;
-
-  @JoinTable()
   @ManyToMany(() => Label, (label) => label.tasks, {
     eager: true,
   })
@@ -72,4 +65,8 @@ export class Task implements IUserOwnResource {
 
   @ManyToOne(() => Group, (group) => group.tasks)
   group?: Group;
+
+  @JoinTable()
+  @ManyToOne(() => User, (user) => user.tasks)
+  owner: User;
 }
