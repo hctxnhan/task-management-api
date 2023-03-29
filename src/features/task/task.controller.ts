@@ -1,7 +1,9 @@
+import {
+  SetAuthorization,
+  SetResourceType,
+} from '@/common/decorators/authorization.decorator';
 import { CurrentResource } from '@/common/decorators/current-resource.decorator';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { SetResourceType } from '@/common/decorators/resource-type.decorator';
-import { UserOwnResourceGuard } from '@/common/guards/user-own-resource.guard';
 import { Task } from '@/entities/task.entity';
 import { User } from '@/entities/user.entity';
 import {
@@ -15,8 +17,11 @@ import {
   Patch,
   Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
+import { Permission } from '../authorization/permission.type';
+import { PermissionScope } from '../authorization/resource-owner.type';
+import { ResourceType } from '../authorization/resource-type.type';
+import { Role } from '../authorization/role.type';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { PriorityUpdateDto } from './dto/priority-update-dto';
 import { ReturnedTaskDto } from './dto/returned-task.dto';
@@ -24,12 +29,12 @@ import { StatusUpdateDto } from './dto/status-update.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskService } from './task.service';
 
-@SetResourceType(Task)
-@UseGuards(UserOwnResourceGuard)
+@SetResourceType(ResourceType.TASK)
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  @SetAuthorization(Permission.READ)
   @Get('auto-schedule')
   async autoSchedule(@CurrentUser() user: User, @Query('hours') hours: number) {
     const tasks = await this.taskService.getAutoSchedule(user, hours);
@@ -40,6 +45,7 @@ export class TaskController {
     };
   }
 
+  @SetAuthorization(Permission.CREATE)
   @Post()
   async create(
     @Body() createTaskDto: CreateTaskDto,
@@ -50,35 +56,38 @@ export class TaskController {
     );
   }
 
+  @SetAuthorization(Permission.READ)
   @Get()
-  findAll(@CurrentUser() user: User) {
-    return this.taskService.findAll({
+  async findAll(@CurrentUser() user: User) {
+    const tasks = await this.taskService.findAll({
       where: {
-        userId: user.id,
+        ownerId: user.id,
       },
     });
+
+    return tasks.map((task) => new ReturnedTaskDto(task));
   }
 
+  @SetAuthorization(Permission.READ)
   @Get(':id')
   async findOne(@Param('id') id: number, @CurrentResource() task: Task) {
     return new ReturnedTaskDto(task);
   }
 
+  @SetAuthorization(Permission.UPDATE)
   @Patch(':id')
-  update(
-    @Param('id') id: number,
-    @Body() updateTaskDto: UpdateTaskDto,
-    @CurrentResource() task: Task,
-  ) {
-    return this.taskService.update(id, updateTaskDto, task);
+  update(@Param('id') id: number, @Body() updateTaskDto: UpdateTaskDto) {
+    return this.taskService.update(id, updateTaskDto);
   }
 
+  @SetAuthorization(Permission.DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.taskService.remove(id);
   }
 
+  @SetAuthorization(Permission.UPDATE)
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: number,
@@ -90,6 +99,7 @@ export class TaskController {
     };
   }
 
+  @SetAuthorization(Permission.UPDATE)
   @Patch(':id/priority')
   async updatePriority(
     @Param('id') id: number,

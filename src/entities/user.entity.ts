@@ -36,24 +36,24 @@ export class User {
   @Column()
   name: string;
 
-  @OneToMany(() => Task, (task) => task.user)
+  @OneToMany(() => Task, (task) => task.owner)
   tasks?: Task[];
 
-  @OneToMany(() => Label, (label) => label.user, {
+  @OneToMany(() => Label, (label) => label.owner, {
     cascade: true,
   })
   labels?: Label[];
 
-  @OneToMany(() => Category, (category) => category.user, {
+  @OneToMany(() => Category, (category) => category.owner, {
     cascade: true,
   })
   categories?: Category[];
 
-  @ManyToMany(() => Group, (group) => group.users)
+  @ManyToMany(() => Group, (group) => group.members)
   @JoinTable()
   groups?: Group[];
 
-  @OneToMany(() => Group, (group) => group.user, {
+  @OneToMany(() => Group, (group) => group.owner, {
     cascade: true,
   })
   ownedGroups?: Group[];

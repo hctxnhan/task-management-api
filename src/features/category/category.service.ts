@@ -15,7 +15,11 @@ export class CategoryService {
 
   async create(createCategoryDto: CreateCategoryDto, currentUser: User) {
     const existingCategory = await this.categoryRepository.findOne({
-      where: { name: createCategoryDto.name, userId: currentUser.id },
+      where: {
+        name: createCategoryDto.name,
+        ownerId: currentUser.id,
+        groupId: createCategoryDto.groupId || null,
+      },
     });
 
     if (existingCategory) {
@@ -24,12 +28,17 @@ export class CategoryService {
 
     const category = new Category();
     category.name = createCategoryDto.name;
-    category.user = currentUser;
+
+    if (createCategoryDto.groupId) {
+      category.groupId = createCategoryDto.groupId;
+    }
+
+    category.owner = currentUser;
 
     return this.categoryRepository.save(category);
   }
 
-  findAll(filter: FindManyOptions) {
+  findAll(filter: FindManyOptions<Category>) {
     return this.categoryRepository.find(filter);
   }
 

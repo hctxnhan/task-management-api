@@ -1,4 +1,3 @@
-import { IUserOwnResource } from '@/types/user-own-resource.interface';
 import {
   Column,
   Entity,
@@ -8,11 +7,12 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Group } from './group.entity';
+import { Resource } from './resource.entity';
 import { Task } from './task.entity';
 import { User } from './user.entity';
 
 @Entity()
-export class Category implements IUserOwnResource {
+export class Category extends Resource {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -32,8 +32,5 @@ export class Category implements IUserOwnResource {
 
   @JoinTable()
   @ManyToOne(() => User, (user) => user.categories)
-  user?: User;
-
-  @Column()
-  userId: number;
+  owner: User;
 }

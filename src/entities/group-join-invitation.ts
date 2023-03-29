@@ -1,16 +1,19 @@
 import { JoinGroupInvitationStatus } from '@/types/enum';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Group } from './group.entity';
+import { Resource } from './resource.entity';
+import { User } from './user.entity';
 
 @Entity()
-export class GroupJoinInvitation {
+export class GroupJoinInvitation extends Resource {
   @PrimaryGeneratedColumn()
   id: number;
-
-  @Column()
-  groupId: number;
-
-  @Column()
-  userId: number;
 
   @Column({
     type: 'enum',
@@ -18,4 +21,11 @@ export class GroupJoinInvitation {
     default: JoinGroupInvitationStatus.PENDING,
   })
   status: JoinGroupInvitationStatus;
+
+  @ManyToOne(() => Group, (group) => group.tasks)
+  group?: Group;
+
+  @JoinTable()
+  @ManyToOne(() => User, (user) => user.tasks)
+  owner: User;
 }

@@ -37,7 +37,7 @@ export class TaskService {
     task.description = description;
     task.title = title;
     task.status = TaskStatus.TODO;
-    task.userId = user.id;
+    task.ownerId = user.id;
     task.categoryId = categoryId;
     task.priority = priority;
 
@@ -51,7 +51,7 @@ export class TaskService {
     return this.taskRepository.save(task);
   }
 
-  findAll(filter: FindManyOptions) {
+  findAll(filter: FindManyOptions<Task>) {
     return this.taskRepository.find(filter);
   }
 
@@ -61,7 +61,7 @@ export class TaskService {
     });
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto, currentTask: Task) {
+  update(id: number, updateTaskDto: UpdateTaskDto) {
     throw new Error('Method not implemented.');
   }
 
@@ -80,7 +80,7 @@ export class TaskService {
   async getAutoSchedule(user: User, hours: number) {
     const tasks = await this.findAll({
       where: {
-        userId: user.id,
+        ownerId: user.id,
         dueDate: MoreThan(new Date()),
         status: TaskStatus.TODO,
       },

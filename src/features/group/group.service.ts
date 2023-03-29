@@ -16,7 +16,7 @@ export class GroupService {
   create(createGroupDto: CreateGroupDto, owner: User) {
     const group = new Group();
     group.name = createGroupDto.name;
-    group.user = owner;
+    group.owner = owner;
 
     return this.groupRepository.save(group);
   }

@@ -4,26 +4,21 @@ import {
   ManyToMany,
   ManyToOne,
   OneToMany,
-  PrimaryGeneratedColumn,
+  RelationId,
 } from 'typeorm';
 import { Category } from './category.entity';
 import { Label } from './label.entity';
+import { Resource } from './resource.entity';
 import { Task } from './task.entity';
 import { User } from './user.entity';
 
 @Entity()
-export class Group {
-  @PrimaryGeneratedColumn()
-  id: number;
-
+export class Group extends Resource {
   @ManyToMany(() => User, (user) => user.groups)
-  users: User[];
+  members: User[];
 
   @ManyToOne(() => User, (user) => user.ownedGroups)
-  user: User;
-
-  @Column()
-  userId: number;
+  owner: User;
 
   @OneToMany(() => Category, (category) => category.group, {
     cascade: true,
