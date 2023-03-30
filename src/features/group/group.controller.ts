@@ -13,6 +13,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '../authorization/permission.type';
 import { PermissionScope } from '../authorization/resource-owner.type';
 import { ResourceType } from '../authorization/resource-type.type';
@@ -25,6 +26,8 @@ import { ReturnedGroupDto } from './dto/returned-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupService } from './group.service';
 
+@ApiBearerAuth()
+@ApiTags('Group')
 @SetResourceType(ResourceType.GROUP)
 @Controller('group')
 export class GroupController {

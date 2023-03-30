@@ -1,9 +1,12 @@
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { User } from '@/entities/user.entity';
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateGroupJoinInvitationDto } from './dto/create-group-join-invitation.dto';
 import { GroupJoinInvitationService } from './group-join-invitation.service';
 
+@ApiBearerAuth()
+@ApiTags('Group Join Request')
 @Controller('group-join-request')
 export class GroupJoinInvitationController {
   constructor(
