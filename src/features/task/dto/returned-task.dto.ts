@@ -27,7 +27,7 @@ export class ReturnedTaskDto {
 
   @Expose()
   @Type(() => ReturnedLabelDto)
-  labels: Label[];
+  labels: ReturnedLabelDto[];
 
   @Expose()
   categoryId: number;

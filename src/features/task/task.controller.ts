@@ -18,10 +18,9 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '../authorization/permission.type';
-import { PermissionScope } from '../authorization/resource-owner.type';
 import { ResourceType } from '../authorization/resource-type.type';
-import { Role } from '../authorization/role.type';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { PriorityUpdateDto } from './dto/priority-update-dto';
 import { ReturnedTaskDto } from './dto/returned-task.dto';
@@ -29,6 +28,8 @@ import { StatusUpdateDto } from './dto/status-update.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskService } from './task.service';
 
+@ApiBearerAuth()
+@ApiTags('Task')
 @SetResourceType(ResourceType.TASK)
 @Controller('task')
 export class TaskController {

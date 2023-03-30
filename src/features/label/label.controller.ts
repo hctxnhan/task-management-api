@@ -12,13 +12,16 @@ import {
   Param,
   Patch,
   Post,
-  UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsNull } from 'typeorm';
 import { CreateLabelDto } from './dto/create-label.dto';
 import { ReturnedLabelDto } from './dto/returned-label.dto';
 import { UpdateLabelDto } from './dto/update-label.dto';
 import { LabelService } from './label.service';
+
+@ApiBearerAuth()
+@ApiTags('Label')
 @Controller('label')
 export class LabelController {
   constructor(private readonly labelService: LabelService) {}

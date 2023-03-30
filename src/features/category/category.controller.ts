@@ -17,6 +17,7 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsNull } from 'typeorm';
 import { Permission } from '../authorization/permission.type';
 import { PermissionScope } from '../authorization/resource-owner.type';
@@ -26,6 +27,8 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { ReturnedCategoryDto } from './dto/returned-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 
+@ApiBearerAuth()
+@ApiTags('Category')
 @SetResourceType(ResourceType.CATEGORY)
 @Controller('category')
 export class CategoryController {

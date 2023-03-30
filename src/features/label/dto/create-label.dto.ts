@@ -1,3 +1,4 @@
+import { ApiHideProperty } from '@nestjs/swagger';
 import { IsHexColor, IsString, MaxLength } from 'class-validator';
 
 export class CreateLabelDto {
@@ -8,5 +9,6 @@ export class CreateLabelDto {
   @IsHexColor()
   color: string;
 
+  @ApiHideProperty()
   groupId?: number;
 }
