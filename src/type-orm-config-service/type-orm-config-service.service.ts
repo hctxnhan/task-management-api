@@ -7,6 +7,7 @@ import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { Group } from '@/entities/group.entity';
 import { GroupJoinInvitation } from '@/entities/group-join-invitation';
+import { Notification } from '@/entities/notification.entity';
 @Injectable()
 export class TypeOrmConfigServiceService implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
@@ -20,9 +21,17 @@ export class TypeOrmConfigServiceService implements TypeOrmOptionsFactory {
       database: this.configService.get<string>('database.database'),
       schema: this.configService.get<string>('database.schema'),
       synchronize: true,
-      logging: true,
+      logging: false,
       subscribers: [],
-      entities: [User, Label, Task, Category, Group, GroupJoinInvitation],
+      entities: [
+        User,
+        Label,
+        Task,
+        Category,
+        Group,
+        GroupJoinInvitation,
+        Notification,
+      ],
     };
   }
 }

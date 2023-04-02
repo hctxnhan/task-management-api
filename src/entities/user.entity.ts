@@ -10,6 +10,7 @@ import { Category } from './category.entity';
 import { Group } from './group.entity';
 import { Label } from './label.entity';
 import { Task } from './task.entity';
+import { Notification } from './notification.entity';
 
 @Entity()
 export class User {
@@ -60,4 +61,7 @@ export class User {
 
   @OneToMany(() => Task, (task) => task.assignee)
   assignedTasks?: Task[];
+
+  @OneToMany(() => Notification, (notification) => notification.owner)
+  notifications?: Notification[];
 }

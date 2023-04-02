@@ -7,9 +7,10 @@ import { UserModule } from '../user/user.module';
 import { TaskScheduler } from '../task-scheduler/task-scheduler';
 import { TASK_SCHEDULER_STRATEGY } from '@/common/tokens/tokens';
 import { TaskSchedulerStrategy } from '../task-scheduler/interfaces/task-scheduler-strategy.enum';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([Task])],
+  imports: [UserModule, TypeOrmModule.forFeature([Task]), NotificationModule],
   controllers: [TaskController],
   providers: [
     TaskService,
