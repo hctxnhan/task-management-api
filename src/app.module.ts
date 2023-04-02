@@ -1,6 +1,6 @@
 import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -16,6 +16,7 @@ import { UserModule } from './features/user/user.module';
 import { TypeOrmConfigServiceService } from './type-orm-config-service/type-orm-config-service.service';
 import { GroupJoinInvitationModule } from './features/group-join-invitation/group-join-invitation.module';
 import { AuthorizationGuard } from './common/guards/authorization.guard';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -28,6 +29,10 @@ import { AuthorizationGuard } from './common/guards/authorization.guard';
       isGlobal: true,
       load: [environmentConfig],
     }),
+    CacheModule.register({
+      isGlobal: true,
+    }),
+    ScheduleModule.forRoot(),
     TaskModule,
     UserModule,
     LabelModule,

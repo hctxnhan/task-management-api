@@ -1,41 +1,42 @@
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   WebSocketGateway,
-  SubscribeMessage,
-  MessageBody,
 } from '@nestjs/websockets';
-import { NotificationService } from './notification.service';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 
-@WebSocketGateway()
-export class NotificationGateway {
-  constructor(private readonly notificationService: NotificationService) {}
+import { Notification } from '@/entities/notification.entity';
+import { WebSocketServer } from '@nestjs/websockets/decorators';
+import { Cache } from 'cache-manager';
+import { Server, Socket } from 'socket.io';
+import { AuthService } from '../auth/auth.service';
 
-  @SubscribeMessage('createNotification')
-  create(@MessageBody() createNotificationDto: CreateNotificationDto) {
-    return this.notificationService.create(createNotificationDto);
+@WebSocketGateway({
+  namespace: 'notifications',
+})
+export class NotificationGateway implements OnGatewayConnection {
+  constructor(
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    private readonly authService: AuthService,
+  ) {}
+
+  @WebSocketServer()
+  private readonly server: Server;
+
+  async handleConnection(client: any, ...args: any[]) {
+    const { token } = client.handshake.query;
+    const user = await this.authService.validateToken(token);
+    if (user) {
+      this.cacheManager.set(user.id.toString(), client.id, 0);
+    } else {
+      client.disconnect();
+    }
   }
 
-  @SubscribeMessage('findAllNotification')
-  findAll() {
-    return this.notificationService.findAll();
-  }
-
-  @SubscribeMessage('findOneNotification')
-  findOne(@MessageBody() id: number) {
-    return this.notificationService.findOne(id);
-  }
-
-  @SubscribeMessage('updateNotification')
-  update(@MessageBody() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationService.update(
-      updateNotificationDto.id,
-      updateNotificationDto,
-    );
-  }
-
-  @SubscribeMessage('removeNotification')
-  remove(@MessageBody() id: number) {
-    return this.notificationService.remove(id);
+  async emitNotificationToUser(userId: number, data: Notification) {
+    const clientId = await this.cacheManager.get<string>(userId.toString());
+    if (clientId) {
+      this.server.to(clientId).emit('notification', data);
+    }
   }
 }

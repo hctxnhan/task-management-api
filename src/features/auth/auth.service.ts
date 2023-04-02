@@ -12,6 +12,15 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
+  async validateToken(token: string): Promise<User | null> {
+    try {
+      const { email } = this.jwtService.verify(token);
+      return await this.userService.findOne({ where: { email } });
+    } catch (err) {
+      return null;
+    }
+  }
+
   async validateUser(
     email: string,
     plainPassword: string,

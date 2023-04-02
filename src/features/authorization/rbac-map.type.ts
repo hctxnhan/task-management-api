@@ -69,4 +69,11 @@ export const rbacMap: RBACMap = {
     },
     [Role.USER]: FULL_ACCESS_OWN_RESOURCE,
   },
+  [ResourceType.NOTIFICATION]: {
+    [Role.GROUP_OWNER]: FULL_ACCESS_GROUP_OWNER,
+    [Role.GROUP_MEMBER]: {
+      [Permission.READ]: PermissionScope.GROUP,
+    },
+    [Role.USER]: FULL_ACCESS_OWN_RESOURCE,
+  },
 };
