@@ -1,3 +1,4 @@
+import { ApiHideProperty } from '@nestjs/swagger';
 import { IsNumber, IsString, MaxLength } from 'class-validator';
 
 export class CreateCategoryDto {
@@ -8,5 +9,6 @@ export class CreateCategoryDto {
   @IsNumber()
   priority: number;
 
+  @ApiHideProperty()
   groupId?: number;
 }

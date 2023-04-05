@@ -34,6 +34,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
+  @SetAuthorization(Permission.CREATE)
   @Post()
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
@@ -44,7 +45,7 @@ export class CategoryController {
     );
   }
 
-  @SetAuthorization(Permission.READ, PermissionScope.GROUP)
+  @SetAuthorization(Permission.READ)
   @Get()
   async findAll(@CurrentUser() user: User) {
     const all = await this.categoryService.findAll({
@@ -57,11 +58,13 @@ export class CategoryController {
     return all.map((category) => new ReturnedCategoryDto(category));
   }
 
+  @SetAuthorization(Permission.READ)
   @Get(':id')
   findOne(@CurrentResource() category: Category) {
     return new ReturnedCategoryDto(category);
   }
 
+  @SetAuthorization(Permission.UPDATE)
   @Patch(':id')
   async update(
     @Param('id') id: number,
@@ -75,6 +78,7 @@ export class CategoryController {
     });
   }
 
+  @SetAuthorization(Permission.DELETE)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async remove(@Param('id') id: number) {
