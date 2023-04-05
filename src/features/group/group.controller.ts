@@ -25,6 +25,8 @@ import { CreateGroupDto } from './dto/create-group.dto';
 import { ReturnedGroupDto } from './dto/returned-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupService } from './group.service';
+import { ReturnedCategoryDto } from '../category/dto/returned-category.dto';
+import { ReturnedLabelDto } from '../label/dto/returned-label.dto';
 
 @ApiBearerAuth()
 @ApiTags('Group')
@@ -80,12 +82,14 @@ export class GroupController {
     @Body() createCategoryDto: CreateCategoryDto,
     @CurrentUser() user: User,
   ) {
-    return await this.categoryService.create(
-      {
-        ...createCategoryDto,
-        groupId: id,
-      },
-      user,
+    return new ReturnedCategoryDto(
+      await this.categoryService.create(
+        {
+          ...createCategoryDto,
+          groupId: id,
+        },
+        user,
+      ),
     );
   }
 
@@ -97,12 +101,14 @@ export class GroupController {
     @Body() createLabelDto: CreateLabelDto,
     @CurrentUser() user: User,
   ) {
-    return await this.labelService.create(
-      {
-        ...createLabelDto,
-        groupId: id,
-      },
-      user,
+    return new ReturnedLabelDto(
+      await this.labelService.create(
+        {
+          ...createLabelDto,
+          groupId: id,
+        },
+        user,
+      ),
     );
   }
 }
