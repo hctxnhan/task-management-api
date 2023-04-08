@@ -1,5 +1,7 @@
 import { TaskPriority } from '@/types/enum';
 import { Optional } from '@nestjs/common/decorators';
+import { ApiHideProperty } from '@nestjs/swagger';
+import { Exclude } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
@@ -35,4 +37,8 @@ export class CreateTaskDto {
   })
   @Optional()
   labels?: number[];
+
+  @Exclude()
+  @ApiHideProperty()
+  groupId?: number;
 }

@@ -2,7 +2,11 @@ import { Label } from '@/entities/label.entity';
 import { Task } from '@/entities/task.entity';
 import { User } from '@/entities/user.entity';
 import { NotificationType, TaskPriority, TaskStatus } from '@/types/enum';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, MoreThan, Repository } from 'typeorm';
 import { TaskScheduler } from '../task-scheduler/task-scheduler';
@@ -13,6 +17,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { NotificationGateway } from '../notification/notification.gateway';
 import { Notification } from '@/entities/notification.entity';
 import { NotificationService } from '../notification/notification.service';
+import { AssignTaskDto } from './dto/assign-task.dto';
+import { GroupService } from '../group/group.service';
 
 @Injectable()
 export class TaskService {
@@ -20,12 +26,11 @@ export class TaskService {
     @InjectRepository(Task) private taskRepository: Repository<Task>,
     private readonly userService: UserService,
     private readonly taskSchedulerService: TaskScheduler,
+    private readonly groupService: GroupService,
     private readonly notificationGateway: NotificationGateway,
     private readonly notificationService: NotificationService,
   ) {}
 
-  // create a cron that run every hour and check if there is any task that will be due within the next hour
-  // if there is, send a notification to the user that owns the task
   @Cron(CronExpression.EVERY_HOUR)
   async checkForDueTasks() {
     console.log('CRON: -- Checking for due tasks --');
@@ -55,13 +60,21 @@ export class TaskService {
   }
 
   async create(createTaskDto: CreateTaskDto, user: User) {
-    const { description, dueDate, title, categoryId, labels, priority } =
-      createTaskDto;
+    const {
+      description,
+      dueDate,
+      title,
+      categoryId,
+      labels,
+      priority,
+      groupId,
+    } = createTaskDto;
 
     const isValid = await this.userService.categoryAndLabelsIsValid(
       user.id,
       labels,
       categoryId,
+      createTaskDto.groupId,
     );
 
     if (!isValid) {
@@ -76,6 +89,7 @@ export class TaskService {
     task.ownerId = user.id;
     task.categoryId = categoryId;
     task.priority = priority;
+    task.groupId = groupId;
 
     task.labels = labels.map((label) => {
       const labelEntity = new Label();
@@ -123,5 +137,69 @@ export class TaskService {
     });
 
     return this.taskSchedulerService.schedule(tasks, hours);
+  }
+
+  async assignTask(id: number, assignTaskDto: AssignTaskDto) {
+    const { groupId, userId } = assignTaskDto;
+    const user = await this.userService.isUserInGroup(groupId, userId);
+
+    if (!user) {
+      throw new NotFoundException('User not found in group');
+    }
+
+    const task = await this.taskRepository.findOne({
+      where: { id },
+      relations: ['owner'],
+    });
+
+    if (task.ownerId !== assignTaskDto.userId) {
+      throw new ConflictException('Task is already assigned to another user');
+    }
+
+    task.assignee = user;
+
+    const result = await this.taskRepository.save(task);
+    const notification = await this.notificationService.createNotification({
+      ownerId: assignTaskDto.userId,
+      message: `Task ${task.title} is assigned to you`,
+      type: NotificationType.TASK_ASSIGNED,
+    });
+
+    this.notificationGateway.emitNotificationToUser(
+      assignTaskDto.userId,
+      notification,
+    );
+
+    return result;
+  }
+
+  async unassignTask(id: number, groupId: number) {
+    const task = await this.taskRepository.findOne({
+      where: { id },
+      relations: {
+        assignee: true,
+      },
+    });
+
+    if (!task) {
+      throw new NotFoundException('Task not found');
+    }
+
+    task.assignee = null;
+    return this.taskRepository.save(task);
+  }
+
+  async createTaskInGroup(
+    groupId: number,
+    createTaskDto: CreateTaskDto,
+    user: User,
+  ) {
+    return this.create(
+      {
+        ...createTaskDto,
+        groupId,
+      },
+      user,
+    );
   }
 }

@@ -50,18 +50,22 @@ export class GroupController {
     );
   }
 
+  @SetAuthorization(Permission.READ)
   @Get()
-  findAll(@CurrentUser() user: User) {
-    return this.groupService.findAll({
+  async findAll(@CurrentUser() user: User) {
+    const groups = await this.groupService.findAll({
       where: {
         ownerId: user.id,
       },
     });
+
+    return groups.map((group) => new ReturnedGroupDto(group));
   }
 
+  @SetAuthorization(Permission.READ)
   @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.groupService.findOne(+id);
+  async findOne(@Param('id') id: number) {
+    return new ReturnedGroupDto(await this.groupService.findOne(+id));
   }
 
   @Patch(':id')

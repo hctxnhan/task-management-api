@@ -35,7 +35,18 @@ export class AuthorizationGuard implements CanActivate {
       context.getHandler(),
     );
 
-    if (isPublic) {
+    const noAuthorization = this.reflector.get<boolean>(
+      AuthorizationAttribute.NO_AUTHORIZATION,
+      context.getHandler(),
+    );
+
+    console.log({
+      url: request.url,
+      isPublic,
+      noAuthorization,
+    });
+
+    if (isPublic || noAuthorization) {
       return true;
     }
 
