@@ -20,7 +20,9 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '../authorization/permission.type';
+import { PermissionScope } from '../authorization/resource-owner.type';
 import { ResourceType } from '../authorization/resource-type.type';
+import { AssignTaskDto } from './dto/assign-task.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { PriorityUpdateDto } from './dto/priority-update-dto';
 import { ReturnedTaskDto } from './dto/returned-task.dto';
@@ -33,7 +35,9 @@ import { TaskService } from './task.service';
 @SetResourceType(ResourceType.TASK)
 @Controller('task')
 export class TaskController {
-  constructor(private readonly taskService: TaskService) {}
+  constructor(
+    private readonly taskService: TaskService, // private readonly labelService: LabelService, // private readonly categoryService: CategoryService,
+  ) {}
 
   @SetAuthorization(Permission.READ)
   @Get('auto-schedule')
@@ -111,4 +115,31 @@ export class TaskController {
       message: 'Task priority updated',
     };
   }
+
+  @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
+  @Patch(':id/assign')
+  async assignTask(
+    @Param('id') id: number,
+    @Body() assignTaskDto: AssignTaskDto,
+  ) {
+    await this.taskService.assignTask(id, assignTaskDto);
+    return {
+      message: 'Task assigned',
+    };
+  }
+
+  @SetAuthorization(Permission.CREATE, PermissionScope.GROUP)
+  @Post(':groupId/task')
+  async createTaskInGroup(
+    @Param('groupId') groupId: number,
+    @Body() createTaskDto: CreateTaskDto,
+    @CurrentUser() user: User,
+  ) {
+    return new ReturnedTaskDto(
+      await this.taskService.createTaskInGroup(groupId, createTaskDto, user),
+    );
+  }
+
+  // @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
+  // @Patch(':id/unassign')
 }

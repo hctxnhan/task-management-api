@@ -8,9 +8,15 @@ import { TaskScheduler } from '../task-scheduler/task-scheduler';
 import { TASK_SCHEDULER_STRATEGY } from '@/common/tokens/tokens';
 import { TaskSchedulerStrategy } from '../task-scheduler/interfaces/task-scheduler-strategy.enum';
 import { NotificationModule } from '../notification/notification.module';
+import { GroupModule } from '../group/group.module';
 
 @Module({
-  imports: [UserModule, TypeOrmModule.forFeature([Task]), NotificationModule],
+  imports: [
+    UserModule,
+    TypeOrmModule.forFeature([Task]),
+    NotificationModule,
+    GroupModule,
+  ],
   controllers: [TaskController],
   providers: [
     TaskService,

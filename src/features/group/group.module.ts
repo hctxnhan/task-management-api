@@ -10,5 +10,6 @@ import { LabelModule } from '../label/label.module';
   imports: [TypeOrmModule.forFeature([Group]), CategoryModule, LabelModule],
   controllers: [GroupController],
   providers: [GroupService],
+  exports: [GroupService],
 })
 export class GroupModule {}

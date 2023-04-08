@@ -21,14 +21,7 @@ export class NotificationService {
   }
 
   createNotification(createNotificationDto: CreateNotificationDto) {
-    const { type, message, ownerId } = createNotificationDto;
-    const notification = new Notification();
-
-    notification.type = type;
-    notification.message = message;
-    notification.ownerId = ownerId;
-
-    this.notificationRepository.save(notification);
+    return this.notificationRepository.save(createNotificationDto);
   }
 
   async markAsRead(id: number) {

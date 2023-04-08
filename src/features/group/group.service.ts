@@ -40,4 +40,12 @@ export class GroupService {
   remove(id: number) {
     return this.groupRepository.delete(id);
   }
+
+  async addMember(groupId: number, userId: number) {
+    return this.groupRepository
+      .createQueryBuilder()
+      .relation(User, 'groups')
+      .of(userId)
+      .add(groupId);
+  }
 }

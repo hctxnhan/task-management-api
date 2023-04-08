@@ -1,6 +1,3 @@
-import { Category } from '@/entities/category.entity';
-import { Label } from '@/entities/label.entity';
-import { ReturnedCategoryDto } from '@/features/category/dto/returned-category.dto';
 import { ReturnedLabelDto } from '@/features/label/dto/returned-label.dto';
 import { TaskPriority, TaskStatus } from '@/types/enum';
 import { Expose, Type } from 'class-transformer';
