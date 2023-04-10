@@ -40,12 +40,6 @@ export class AuthorizationGuard implements CanActivate {
       context.getHandler(),
     );
 
-    console.log({
-      url: request.url,
-      isPublic,
-      noAuthorization,
-    });
-
     if (isPublic || noAuthorization) {
       return true;
     }
@@ -59,7 +53,6 @@ export class AuthorizationGuard implements CanActivate {
       AuthorizationAttribute.RESOURCE_TYPE,
       [context.getHandler(), context.getClass()],
     );
-
 
     if (needAuthorized) {
       const { permission, scope } = needAuthorized;

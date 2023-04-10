@@ -1,10 +1,10 @@
-import { Module, OnModuleInit } from '@nestjs/common';
-import { NotificationService } from './notification.service';
-import { NotificationGateway } from './notification.gateway';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { Notification } from '@/entities/notification.entity';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationController } from './notification.controller';
+import { NotificationGateway } from './notification.gateway';
+import { NotificationService } from './notification.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Notification]), AuthModule],

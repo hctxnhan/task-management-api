@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOneOptions, Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { Group } from '@/entities/group.entity';
 
 @Injectable()
 export class UserService {
@@ -88,7 +87,6 @@ export class UserService {
         );
       });
 
-    console.log(query.getSql());
     const user = await query.getOne();
     return user;
   }

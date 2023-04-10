@@ -2,7 +2,6 @@ import {
   IsEmail,
   IsString,
   IsStrongPassword,
-  Matches,
   ValidateBy,
 } from 'class-validator';
 

@@ -39,3 +39,8 @@ export enum NotificationType {
   GROUP_JOIN_REQUEST_ACCEPTED = 'GROUP_JOIN_REQUEST_ACCEPTED',
   GROUP_JOIN_REQUEST_REJECTED = 'GROUP_JOIN_REQUEST_REJECTED',
 }
+
+export enum Order {
+  ASC = 'asc',
+  DESC = 'desc',
+}

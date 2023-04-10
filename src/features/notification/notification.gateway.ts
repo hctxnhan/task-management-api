@@ -1,14 +1,10 @@
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
-import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  WebSocketGateway,
-} from '@nestjs/websockets';
+import { OnGatewayConnection, WebSocketGateway } from '@nestjs/websockets';
 
 import { Notification } from '@/entities/notification.entity';
 import { WebSocketServer } from '@nestjs/websockets/decorators';
 import { Cache } from 'cache-manager';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { AuthService } from '../auth/auth.service';
 
 @WebSocketGateway({

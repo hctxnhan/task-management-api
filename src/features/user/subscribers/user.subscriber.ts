@@ -1,5 +1,4 @@
 import { User } from '@/entities/user.entity';
-import { AuthService } from '@/features/auth/auth.service';
 import { hashedPassword } from '@/utils/bcrypt-hash.util';
 import {
   DataSource,

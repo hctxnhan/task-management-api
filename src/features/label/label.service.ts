@@ -33,7 +33,6 @@ export class LabelService {
       label.groupId = createLabelDto.groupId;
     }
 
-
     await this.labelRepository.save(label);
     return label;
   }

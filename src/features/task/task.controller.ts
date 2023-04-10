@@ -27,6 +27,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { PriorityUpdateDto } from './dto/priority-update-dto';
 import { ReturnedTaskDto } from './dto/returned-task.dto';
 import { StatusUpdateDto } from './dto/status-update.dto';
+import { TaskPaginationDto } from './dto/task-pagination.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskService } from './task.service';
 
@@ -35,9 +36,7 @@ import { TaskService } from './task.service';
 @SetResourceType(ResourceType.TASK)
 @Controller('task')
 export class TaskController {
-  constructor(
-    private readonly taskService: TaskService, // private readonly labelService: LabelService, // private readonly categoryService: CategoryService,
-  ) {}
+  constructor(private readonly taskService: TaskService) {}
 
   @SetAuthorization(Permission.READ)
   @Get('auto-schedule')
@@ -63,14 +62,11 @@ export class TaskController {
 
   @SetAuthorization(Permission.READ)
   @Get()
-  async findAll(@CurrentUser() user: User) {
-    const tasks = await this.taskService.findAll({
-      where: {
-        ownerId: user.id,
-      },
-    });
-
-    return tasks.map((task) => new ReturnedTaskDto(task));
+  async findAll(
+    @CurrentUser() user: User,
+    @Query() paginationDto: TaskPaginationDto,
+  ) {
+    return await this.taskService.pagination(paginationDto, user);
   }
 
   @SetAuthorization(Permission.READ)

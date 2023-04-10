@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, MoreThan, Repository } from 'typeorm';
+import { FindManyOptions, Like, MoreThan, Repository } from 'typeorm';
 import { TaskScheduler } from '../task-scheduler/task-scheduler';
 import { UserService } from '../user/user.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -19,6 +19,9 @@ import { Notification } from '@/entities/notification.entity';
 import { NotificationService } from '../notification/notification.service';
 import { AssignTaskDto } from './dto/assign-task.dto';
 import { GroupService } from '../group/group.service';
+import { TaskPaginationDto } from './dto/task-pagination.dto';
+import { PaginationResultDto } from '@/common/dto/pagination-result.dto';
+import { ReturnedTaskDto } from './dto/returned-task.dto';
 
 @Injectable()
 export class TaskService {
@@ -33,7 +36,6 @@ export class TaskService {
 
   @Cron(CronExpression.EVERY_HOUR)
   async checkForDueTasks() {
-    console.log('CRON: -- Checking for due tasks --');
     const tasks = await this.taskRepository
       .createQueryBuilder('task')
       .where('task.status = :status', { status: TaskStatus.TODO })
@@ -103,6 +105,29 @@ export class TaskService {
 
   findAll(filter: FindManyOptions<Task>) {
     return this.taskRepository.find(filter);
+  }
+
+  async pagination(taskPaginationDto: TaskPaginationDto, user: User) {
+    const { limit, order, orderBy, page, search, status } = taskPaginationDto;
+    const [result, count] = await this.taskRepository.findAndCount({
+      where: {
+        ownerId: user.id,
+        status,
+        title: search ? Like(`%${search}%`) : undefined,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        [orderBy]: order,
+      },
+    });
+
+    return new PaginationResultDto<ReturnedTaskDto>({
+      data: result.map((task) => new ReturnedTaskDto(task)),
+      limit,
+      page,
+      total: count,
+    });
   }
 
   findOne(id: number) {
