@@ -2,6 +2,7 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +15,10 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  useContainer(app.select(AppModule), {
+    fallbackOnErrors: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -28,6 +33,5 @@ async function bootstrap() {
     }),
   );
   await app.listen(3000);
-  console.log('Application is running on: ' + (await app.getUrl()));
 }
 bootstrap();

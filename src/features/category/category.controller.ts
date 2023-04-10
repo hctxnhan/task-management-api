@@ -20,7 +20,6 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { IsNull } from 'typeorm';
 import { Permission } from '../authorization/permission.type';
-import { PermissionScope } from '../authorization/resource-owner.type';
 import { ResourceType } from '../authorization/resource-type.type';
 import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';

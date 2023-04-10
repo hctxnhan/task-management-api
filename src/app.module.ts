@@ -17,6 +17,7 @@ import { TypeOrmConfigServiceService } from './type-orm-config-service/type-orm-
 import { GroupJoinInvitationModule } from './features/group-join-invitation/group-join-invitation.module';
 import { AuthorizationGuard } from './common/guards/authorization.guard';
 import { ScheduleModule } from '@nestjs/schedule';
+import { IsValidColumnNameConstraint } from './common/decorators/valid-column-name.decorator';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ScheduleModule } from '@nestjs/schedule';
   providers: [
     AppService,
     TypeOrmConfigServiceService,
+    IsValidColumnNameConstraint,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

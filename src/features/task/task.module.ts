@@ -1,14 +1,14 @@
-import { Module } from '@nestjs/common';
-import { TaskService } from './task.service';
-import { TaskController } from './task.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Task } from '@/entities/task.entity';
-import { UserModule } from '../user/user.module';
-import { TaskScheduler } from '../task-scheduler/task-scheduler';
 import { TASK_SCHEDULER_STRATEGY } from '@/common/tokens/tokens';
-import { TaskSchedulerStrategy } from '../task-scheduler/interfaces/task-scheduler-strategy.enum';
-import { NotificationModule } from '../notification/notification.module';
+import { Task } from '@/entities/task.entity';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { GroupModule } from '../group/group.module';
+import { NotificationModule } from '../notification/notification.module';
+import { TaskSchedulerStrategy } from '../task-scheduler/interfaces/task-scheduler-strategy.enum';
+import { TaskScheduler } from '../task-scheduler/task-scheduler';
+import { UserModule } from '../user/user.module';
+import { TaskController } from './task.controller';
+import { TaskService } from './task.service';
 
 @Module({
   imports: [

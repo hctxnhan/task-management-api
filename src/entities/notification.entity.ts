@@ -5,7 +5,6 @@ import {
   Entity,
   JoinTable,
   ManyToOne,
-  PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Resource } from './resource.entity';
