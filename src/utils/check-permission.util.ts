@@ -4,7 +4,7 @@ import { Role } from '@/features/authorization/role.type';
 import { rbacMap } from '@/features/authorization/rbac-map.type';
 import { ResourceType } from '@/features/authorization/resource-type.type';
 
-export function checkPermisison(
+export function checkPermission(
   resourceType: ResourceType,
   role: Role,
   permission: Permission,

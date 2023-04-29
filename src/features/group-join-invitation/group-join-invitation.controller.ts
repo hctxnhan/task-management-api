@@ -1,6 +1,14 @@
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { User } from '@/entities/user.entity';
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateGroupJoinInvitationDto } from './dto/create-group-join-invitation.dto';
 import { GroupJoinInvitationService } from './group-join-invitation.service';
@@ -12,6 +20,7 @@ import { ResourceType } from '../authorization/resource-type.type';
 import { Permission } from '../authorization/permission.type';
 import { PermissionScope } from '../authorization/resource-owner.type';
 import { JoinGroupInvitationStatus } from '@/types/enum';
+import { ReturnedGroupJoinInvitationDto } from './dto/returned-group-join-invitation.dto';
 
 @ApiBearerAuth()
 @ApiTags('Group Join Request')
@@ -22,13 +31,32 @@ export class GroupJoinInvitationController {
     private readonly groupJoinInvitationService: GroupJoinInvitationService,
   ) {}
 
+  @SetAuthorization(Permission.READ, PermissionScope.OWN)
+  @Get('/my-requests')
+  async getAllMyRequests(@CurrentUser() user: User) {
+    const allMyInvitations = await this.groupJoinInvitationService.findAll({
+      where: {
+        ownerId: user.id,
+        status: JoinGroupInvitationStatus.PENDING,
+      },
+      relations: ['owner'],
+    });
+
+    return allMyInvitations.map((invitation) => {
+      return new ReturnedGroupJoinInvitationDto({
+        ...invitation,
+        requestBy: invitation.owner,
+      });
+    });
+  }
+
   @SetAuthorization(Permission.CREATE)
   @Post('request/:groupId')
-  create(
+  async create(
     @Body() createGroupJoinInvitationDto: CreateGroupJoinInvitationDto,
     @CurrentUser() user: User,
   ) {
-    return this.groupJoinInvitationService.create(
+    await this.groupJoinInvitationService.create(
       createGroupJoinInvitationDto,
       user,
     );
@@ -36,24 +64,32 @@ export class GroupJoinInvitationController {
 
   @SetAuthorization(Permission.READ, PermissionScope.GROUP)
   @Get(':groupId')
-  findAll(@Param('groupId') id: number) {
-    return this.groupJoinInvitationService.findAll({
+  async findAll(@Param('groupId') id: number) {
+    const allInvitations = await this.groupJoinInvitationService.findAll({
       where: {
-        id,
+        groupId: id,
       },
+      relations: ['owner'],
     });
+    return allInvitations.map(
+      (invitation) =>
+        new ReturnedGroupJoinInvitationDto({
+          ...invitation,
+          requestBy: invitation.owner,
+        }),
+    );
   }
 
   @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
   @Post(':id/reject')
-  reject(@Param('id') id: number) {
-    return this.groupJoinInvitationService.reject(id);
+  async reject(@Param('id') id: number) {
+    await this.groupJoinInvitationService.reject(id);
   }
 
   @SetAuthorization(Permission.UPDATE)
   @Post(':id/cancel')
-  cancel(@Param('id') id: number) {
-    return this.groupJoinInvitationService.cancel(id);
+  async cancel(@Param('id') id: number) {
+    await this.groupJoinInvitationService.cancel(id);
   }
 
   @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
@@ -64,18 +100,7 @@ export class GroupJoinInvitationController {
 
   @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
   @Post(':id/accept')
-  accept(@Param('id') id: number) {
-    return this.groupJoinInvitationService.accept(id);
-  }
-
-  @SetAuthorization(Permission.READ, PermissionScope.OWN)
-  @Get('/my-requests')
-  getAllMyRequests(@CurrentUser() user: User) {
-    return this.groupJoinInvitationService.findAll({
-      where: {
-        ownerId: user.id,
-        status: JoinGroupInvitationStatus.PENDING,
-      },
-    });
+  async accept(@Param('id') id: number) {
+    await this.groupJoinInvitationService.accept(id);
   }
 }

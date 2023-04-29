@@ -75,7 +75,6 @@ export class TaskController {
     return new ReturnedTaskDto(task);
   }
 
-  @HttpCode(HttpStatus.NO_CONTENT)
   @SetAuthorization(Permission.UPDATE, PermissionScope.ALL)
   @Patch(':id')
   update(
@@ -87,10 +86,9 @@ export class TaskController {
   }
 
   @SetAuthorization(Permission.DELETE, PermissionScope.ALL)
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.taskService.remove(id);
+  async remove(@Param('id') id: number) {
+    await this.taskService.remove(id);
   }
 
   @SetAuthorization(Permission.UPDATE, PermissionScope.ALL)

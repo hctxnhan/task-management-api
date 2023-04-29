@@ -30,6 +30,9 @@ export class GroupService {
       where: {
         id,
       },
+      relations: {
+        owner: true,
+      },
     });
   }
 
@@ -47,5 +50,51 @@ export class GroupService {
       .relation(User, 'groups')
       .of(userId)
       .add(groupId);
+  }
+
+  async checkIfUserIsMember(groupId: number, userId: number) {
+    return (
+      (await this.groupRepository.count({
+        where: {
+          id: groupId,
+          members: {
+            id: userId,
+          },
+        },
+      })) > 0
+    );
+  }
+
+  async kickMember(groupId: number, userId: number, user: User) {
+    // check if the user is the owner of the group
+    const group = await this.findOne(groupId);
+    if (group.owner.id !== user.id) {
+      throw new Error('Only owner can kick members');
+    }
+
+    return this.removeMember(groupId, userId);
+  }
+
+  async leaveGroup(groupId: number, userId: number) {
+    // check if the user is the owner of the group
+    const group = await this.findOne(groupId);
+    if (group.owner.id === userId) {
+      throw new Error('Owner cannot leave the group');
+    }
+
+    return this.removeMember(groupId, userId);
+  }
+
+  async removeMember(groupId: number, userId: number) {
+    const isMember = await this.checkIfUserIsMember(groupId, userId);
+    if (!isMember) {
+      throw new Error('User is not a member of the group');
+    }
+
+    return this.groupRepository
+      .createQueryBuilder()
+      .relation(User, 'groups')
+      .of(userId)
+      .remove(groupId);
   }
 }

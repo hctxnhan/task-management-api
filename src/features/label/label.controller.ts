@@ -81,7 +81,6 @@ export class LabelController {
 
   @SetAuthorization(Permission.DELETE, PermissionScope.ALL)
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
   remove(@Param('id') id: number) {
     return this.labelService.remove(id);
   }
