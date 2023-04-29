@@ -32,6 +32,9 @@ export class ReturnedTaskDto {
   @Expose()
   priority: TaskPriority;
 
+  @Expose()
+  groupId?: number;
+
   constructor(partial: Partial<ReturnedTaskDto>) {
     Object.assign(this, partial);
   }

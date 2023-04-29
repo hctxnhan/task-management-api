@@ -5,6 +5,10 @@ export class ReturnedCategoryDto {
   id: number;
   @Expose()
   name: string;
+  @Expose()
+  groupId?: number;
+  @Expose()
+  priority: number;
 
   constructor(partial: Partial<ReturnedCategoryDto>) {
     Object.assign(this, partial);

@@ -56,8 +56,36 @@ export class AuthorizationGuard implements CanActivate {
 
     if (needAuthorized) {
       const { permission, scope } = needAuthorized;
-      if (scope === PermissionScope.GROUP) {
-        const groupId = request.params.groupId || request.body.groupId;
+      // If the route is need to be manually authorized, then return true
+      if (scope === PermissionScope.MANUAL) {
+        return true;
+      }
+
+      const resourceId = request.params.id || request.body.id;
+      let resource;
+      if (resourceId) {
+        resource = await this.dataSource
+          .getRepository(resourceTypeToEntity[resourceType])
+          .findOne({
+            where: {
+              id: resourceId,
+            },
+          });
+        if (!resource) {
+          throw new NotFoundException('Resource not found');
+        }
+      }
+
+      const groupId =
+        request.params.groupId ??
+        request.body.groupId ??
+        request.query.groupId ??
+        resource?.groupId;
+
+      if (
+        (scope === PermissionScope.GROUP || scope === PermissionScope.ALL) &&
+        groupId
+      ) {
         const group = await this.dataSource
           .getRepository(resourceTypeToEntity[ResourceType.GROUP])
           .findOne({
@@ -87,39 +115,37 @@ export class AuthorizationGuard implements CanActivate {
             role = Role.GROUP_MEMBER;
           }
         }
-      } else if (scope === PermissionScope.OWN) {
-        const resourceId = request.params.id || request.body.id;
-        if (resourceId) {
-          const resource = await this.dataSource
-            .getRepository(resourceTypeToEntity[resourceType])
-            .findOne({
-              where: {
-                id: resourceId,
-                groupId: null,
-              },
-            });
-
-          if (!resource) {
-            throw new NotFoundException('Resource not found');
-          }
-
+      }
+      if (
+        (scope === PermissionScope.OWN || scope === PermissionScope.ALL) &&
+        role === Role.USER &&
+        !groupId
+      ) {
+        if (resource) {
           const isOwner = resource.ownerId === user.id;
           if (!isOwner) {
             throw new ForbiddenException(
               'You are not the owner of this resource',
             );
           }
-          request['resource'] = resource;
         }
       }
+      const actualScope = groupId ? PermissionScope.GROUP : PermissionScope.OWN;
 
-      const hasAccess = checkPermisison(resourceType, role, permission, scope);
+      const hasAccess = checkPermisison(
+        resourceType,
+        role,
+        permission,
+        actualScope,
+      );
+
       if (!hasAccess) {
         throw new ForbiddenException(
           'You are not authorized to perform this action',
         );
       }
 
+      request['resource'] = resource;
       return true;
     }
   }

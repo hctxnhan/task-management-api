@@ -2,9 +2,12 @@ import { Category } from '@/entities/category.entity';
 import { User } from '@/entities/user.entity';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository } from 'typeorm';
+import { FindManyOptions, In, Like, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CategoryPaginationDto } from './dto/category-pagination.dto';
+import { PaginationResultDto } from '@/common/dto/pagination-result.dto';
+import { ReturnedCategoryDto } from './dto/returned-category.dto';
 
 @Injectable()
 export class CategoryService {
@@ -52,5 +55,33 @@ export class CategoryService {
 
   remove(id: number) {
     return this.categoryRepository.delete(id);
+  }
+
+  async pagination(paginationDto: CategoryPaginationDto, user: User) {
+    const { limit, order, orderBy, page, search, priority, groupId } =
+      paginationDto;
+    const [result, count] = await this.categoryRepository.findAndCount({
+      where: {
+        ownerId: user.id,
+        name: search ? Like(`%${search}%`) : undefined,
+        priority,
+        group: {
+          id: groupId,
+          ownerId: user.id,
+        },
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+      order: {
+        [orderBy ?? 'id']: order ?? 'ASC',
+      },
+    });
+
+    return new PaginationResultDto<ReturnedCategoryDto>({
+      data: result.map((task) => new ReturnedCategoryDto(task)),
+      limit,
+      page,
+      total: count,
+    });
   }
 }

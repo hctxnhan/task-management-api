@@ -49,7 +49,7 @@ export class TaskController {
     };
   }
 
-  @SetAuthorization(Permission.CREATE)
+  @SetAuthorization(Permission.CREATE, PermissionScope.ALL)
   @Post()
   async create(
     @Body() createTaskDto: CreateTaskDto,
@@ -60,7 +60,7 @@ export class TaskController {
     );
   }
 
-  @SetAuthorization(Permission.READ)
+  @SetAuthorization(Permission.READ, PermissionScope.ALL)
   @Get()
   async findAll(
     @CurrentUser() user: User,
@@ -69,26 +69,31 @@ export class TaskController {
     return await this.taskService.pagination(paginationDto, user);
   }
 
-  @SetAuthorization(Permission.READ)
+  @SetAuthorization(Permission.READ, PermissionScope.ALL)
   @Get(':id')
   async findOne(@Param('id') id: number, @CurrentResource() task: Task) {
     return new ReturnedTaskDto(task);
   }
 
-  @SetAuthorization(Permission.UPDATE)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @SetAuthorization(Permission.UPDATE, PermissionScope.ALL)
   @Patch(':id')
-  update(@Param('id') id: number, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.taskService.update(id, updateTaskDto);
+  update(
+    @Param('id') id: number,
+    @Body() updateTaskDto: UpdateTaskDto,
+    @CurrentResource() task: Task,
+  ) {
+    return this.taskService.update(id, task, updateTaskDto);
   }
 
-  @SetAuthorization(Permission.DELETE)
+  @SetAuthorization(Permission.DELETE, PermissionScope.ALL)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.taskService.remove(id);
   }
 
-  @SetAuthorization(Permission.UPDATE)
+  @SetAuthorization(Permission.UPDATE, PermissionScope.ALL)
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: number,
@@ -100,7 +105,7 @@ export class TaskController {
     };
   }
 
-  @SetAuthorization(Permission.UPDATE)
+  @SetAuthorization(Permission.UPDATE, PermissionScope.ALL)
   @Patch(':id/priority')
   async updatePriority(
     @Param('id') id: number,
@@ -123,19 +128,4 @@ export class TaskController {
       message: 'Task assigned',
     };
   }
-
-  @SetAuthorization(Permission.CREATE, PermissionScope.GROUP)
-  @Post(':groupId/task')
-  async createTaskInGroup(
-    @Param('groupId') groupId: number,
-    @Body() createTaskDto: CreateTaskDto,
-    @CurrentUser() user: User,
-  ) {
-    return new ReturnedTaskDto(
-      await this.taskService.createTaskInGroup(groupId, createTaskDto, user),
-    );
-  }
-
-  // @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
-  // @Patch(':id/unassign')
 }

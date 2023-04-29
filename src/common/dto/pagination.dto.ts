@@ -16,4 +16,8 @@ export class PaginationDto {
   @IsOptional()
   @IsIn([Order.ASC, Order.DESC])
   order?: Order = Order.ASC;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  groupId?: number;
 }

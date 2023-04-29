@@ -16,8 +16,9 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { IsNull } from 'typeorm';
 import { Permission } from '../authorization/permission.type';
 import { ResourceType } from '../authorization/resource-type.type';
@@ -25,6 +26,8 @@ import { CategoryService } from './category.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { ReturnedCategoryDto } from './dto/returned-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { PermissionScope } from '../authorization/resource-owner.type';
+import { CategoryPaginationDto } from './dto/category-pagination.dto';
 
 @ApiBearerAuth()
 @ApiTags('Category')
@@ -33,7 +36,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
-  @SetAuthorization(Permission.CREATE)
+  @SetAuthorization(Permission.CREATE, PermissionScope.ALL)
   @Post()
   async create(
     @Body() createCategoryDto: CreateCategoryDto,
@@ -44,26 +47,22 @@ export class CategoryController {
     );
   }
 
-  @SetAuthorization(Permission.READ)
+  @SetAuthorization(Permission.READ, PermissionScope.ALL)
   @Get()
-  async findAll(@CurrentUser() user: User) {
-    const all = await this.categoryService.findAll({
-      where: {
-        ownerId: user.id,
-        groupId: IsNull(),
-      },
-    });
-
-    return all.map((category) => new ReturnedCategoryDto(category));
+  async findAll(
+    @CurrentUser() user: User,
+    @Query() paginationDto?: CategoryPaginationDto,
+  ) {
+    return await this.categoryService.pagination(paginationDto, user);
   }
 
-  @SetAuthorization(Permission.READ)
+  @SetAuthorization(Permission.READ, PermissionScope.ALL)
   @Get(':id')
-  findOne(@CurrentResource() category: Category) {
+  findOne(@CurrentResource() category: Category, @Param('id') id: number) {
     return new ReturnedCategoryDto(category);
   }
 
-  @SetAuthorization(Permission.UPDATE)
+  @SetAuthorization(Permission.UPDATE, PermissionScope.ALL)
   @Patch(':id')
   async update(
     @Param('id') id: number,
@@ -77,7 +76,7 @@ export class CategoryController {
     });
   }
 
-  @SetAuthorization(Permission.DELETE)
+  @SetAuthorization(Permission.DELETE, PermissionScope.ALL)
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async remove(@Param('id') id: number) {
