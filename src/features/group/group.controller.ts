@@ -17,27 +17,59 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Permission } from '../authorization/permission.type';
 import { PermissionScope } from '../authorization/resource-owner.type';
 import { ResourceType } from '../authorization/resource-type.type';
-import { CategoryService } from '../category/category.service';
-import { CreateCategoryDto } from '../category/dto/create-category.dto';
-import { CreateLabelDto } from '../label/dto/create-label.dto';
-import { LabelService } from '../label/label.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { ReturnedGroupDto } from './dto/returned-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupService } from './group.service';
-import { ReturnedCategoryDto } from '../category/dto/returned-category.dto';
-import { ReturnedLabelDto } from '../label/dto/returned-label.dto';
+import { Role } from '../authorization/role.type';
 
 @ApiBearerAuth()
 @ApiTags('Group')
 @SetResourceType(ResourceType.GROUP)
 @Controller('group')
 export class GroupController {
-  constructor(
-    private readonly groupService: GroupService,
-    private readonly categoryService: CategoryService,
-    private readonly labelService: LabelService,
-  ) {}
+  constructor(private readonly groupService: GroupService) {}
+
+  @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
+  @Post(':groupId/leave')
+  async leave(@Param('groupId') id: number, @CurrentUser() user: User) {
+    await this.groupService.leaveGroup(id, user.id);
+  }
+
+  @SetAuthorization(Permission.READ, PermissionScope.OWN)
+  @Get('/my-groups')
+  async getMyGroups(@CurrentUser() user: User) {
+    const allGroups = await this.groupService.findAll({
+      where: [
+        {
+          ownerId: user.id,
+        },
+        {
+          members: {
+            id: user.id,
+          },
+        },
+      ],
+    });
+
+    return allGroups.map(
+      (group) =>
+        new ReturnedGroupDto({
+          ...group,
+          role:
+            group.ownerId === user.id ? Role.GROUP_OWNER : Role.GROUP_MEMBER,
+        }),
+    );
+  }
+  @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
+  @Post(':groupId/kick/:userId')
+  async kick(
+    @Param('groupId') id: number,
+    @Param('userId') userId: number,
+    @CurrentUser() user: User,
+  ) {
+    await this.groupService.kickMember(id, userId, user);
+  }
 
   @SetAuthorization(Permission.CREATE)
   @Post()
@@ -63,56 +95,20 @@ export class GroupController {
   }
 
   @SetAuthorization(Permission.READ)
-  @Get(':id')
-  async findOne(@Param('id') id: number) {
+  @Get(':groupId')
+  async findOne(@Param('groupId') id: number) {
     return new ReturnedGroupDto(await this.groupService.findOne(+id));
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGroupDto: UpdateGroupDto) {
+  @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
+  @Patch(':groupId')
+  update(@Param('groupId') id: string, @Body() updateGroupDto: UpdateGroupDto) {
     return this.groupService.update(+id, updateGroupDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: number) {
+  @SetAuthorization(Permission.DELETE, PermissionScope.GROUP)
+  @Delete(':groupId')
+  remove(@Param('groupId') id: number) {
     return this.groupService.remove(+id);
-  }
-
-  @SetResourceType(ResourceType.CATEGORY)
-  @SetAuthorization(Permission.CREATE, PermissionScope.GROUP)
-  @Post(':groupId/category')
-  async createCategory(
-    @Param('groupId') id: number,
-    @Body() createCategoryDto: CreateCategoryDto,
-    @CurrentUser() user: User,
-  ) {
-    return new ReturnedCategoryDto(
-      await this.categoryService.create(
-        {
-          ...createCategoryDto,
-          groupId: id,
-        },
-        user,
-      ),
-    );
-  }
-
-  @SetResourceType(ResourceType.LABEL)
-  @SetAuthorization(Permission.CREATE, PermissionScope.GROUP)
-  @Post(':groupId/label')
-  async createLabel(
-    @Param('groupId') id: number,
-    @Body() createLabelDto: CreateLabelDto,
-    @CurrentUser() user: User,
-  ) {
-    return new ReturnedLabelDto(
-      await this.labelService.create(
-        {
-          ...createLabelDto,
-          groupId: id,
-        },
-        user,
-      ),
-    );
   }
 }

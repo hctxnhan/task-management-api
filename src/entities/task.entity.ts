@@ -49,11 +49,15 @@ export class Task extends Resource {
   @JoinTable()
   @ManyToMany(() => Label, (label) => label.tasks, {
     eager: true,
+    onDelete: 'SET NULL',
+    nullable: true,
   })
   labels?: Label[];
 
   @ManyToOne(() => Category, (category) => category.tasks, {
+    nullable: true,
     eager: true,
+    onDelete: 'SET NULL',
   })
   category?: Category;
 
@@ -63,7 +67,9 @@ export class Task extends Resource {
   @ManyToOne(() => User, (user) => user.assignedTasks)
   assignee?: User;
 
-  @ManyToOne(() => Group, (group) => group.tasks)
+  @ManyToOne(() => Group, (group) => group.tasks, {
+    onDelete: 'CASCADE',
+  })
   group?: Group;
 
   @JoinTable()

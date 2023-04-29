@@ -14,7 +14,7 @@ import { DataSource } from 'typeorm';
 import { AuthorizationAttribute } from '../decorators/authorization.decorator';
 import { resourceTypeToEntity } from '@/utils/resource-type-to-entity.util';
 import { ResourceType } from '@/features/authorization/resource-type.type';
-import { checkPermisison } from '@/utils/check-permission.util';
+import { checkPermission } from '@/utils/check-permission.util';
 import { Request } from 'express';
 
 @Injectable()
@@ -117,9 +117,8 @@ export class AuthorizationGuard implements CanActivate {
         }
       }
       if (
-        (scope === PermissionScope.OWN || scope === PermissionScope.ALL) &&
-        role === Role.USER &&
-        !groupId
+        scope === PermissionScope.OWN ||
+        (scope === PermissionScope.ALL && role === Role.USER && !groupId)
       ) {
         if (resource) {
           const isOwner = resource.ownerId === user.id;
@@ -130,9 +129,14 @@ export class AuthorizationGuard implements CanActivate {
           }
         }
       }
-      const actualScope = groupId ? PermissionScope.GROUP : PermissionScope.OWN;
+      const actualScope =
+        scope === PermissionScope.ALL
+          ? groupId
+            ? PermissionScope.GROUP
+            : PermissionScope.OWN
+          : scope;
 
-      const hasAccess = checkPermisison(
+      const hasAccess = checkPermission(
         resourceType,
         role,
         permission,

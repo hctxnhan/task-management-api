@@ -4,6 +4,7 @@ import { Label } from './label.entity';
 import { Resource } from './resource.entity';
 import { Task } from './task.entity';
 import { User } from './user.entity';
+import { GroupJoinInvitation } from './group-join-invitation';
 
 @Entity()
 export class Group extends Resource {
@@ -13,21 +14,18 @@ export class Group extends Resource {
   @ManyToOne(() => User, (user) => user.ownedGroups)
   owner: User;
 
-  @OneToMany(() => Category, (category) => category.group, {
-    cascade: true,
-  })
+  @OneToMany(() => Category, (category) => category.group)
   categories: Category[];
 
-  @OneToMany(() => Label, (label) => label, {
-    cascade: true,
-  })
+  @OneToMany(() => Label, (label) => label)
   labels: Label[];
 
-  @OneToMany(() => Task, (task) => task.group, {
-    cascade: true,
-  })
+  @OneToMany(() => Task, (task) => task.group)
   tasks: Task[];
 
   @Column()
   name: string;
+
+  @OneToMany(() => GroupJoinInvitation, (invitation) => invitation.group)
+  joinInvitations: GroupJoinInvitation[];
 }

@@ -1,6 +1,6 @@
-import { Column } from 'typeorm';
+import { IsNumber } from 'class-validator';
 
 export class CreateGroupJoinInvitationDto {
-  @Column()
+  @IsNumber()
   groupId: number;
 }

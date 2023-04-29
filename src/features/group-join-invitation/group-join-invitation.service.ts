@@ -10,39 +10,38 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
 import { CreateGroupJoinInvitationDto } from './dto/create-group-join-invitation.dto';
 import { User } from '@/entities/user.entity';
+import { GroupService } from '../group/group.service';
 
 @Injectable()
 export class GroupJoinInvitationService {
   constructor(
     @InjectRepository(GroupJoinInvitation)
     private readonly groupJoinInvitationRepository: Repository<GroupJoinInvitation>,
-    @InjectRepository(Group)
-    private readonly groupRepository: Repository<Group>,
+    private readonly groupService: GroupService,
   ) {}
 
   async create(
     createGroupJoinInvitationDto: CreateGroupJoinInvitationDto,
     user: User,
   ) {
+    const { groupId } = createGroupJoinInvitationDto;
+    const userId = user.id;
     // check if the user is already in the group
-    const group = await this.groupRepository.count({
-      where: {
-        id: createGroupJoinInvitationDto.groupId,
-        members: {
-          id: user.id,
-        },
-      },
-      relations: ['users'],
-    });
+    const isMember = await this.groupService.checkIfUserIsMember(
+      groupId,
+      userId,
+    );
 
-    if (group > 0) {
+    if (isMember) {
       throw new ConflictException('User is already in the group');
     }
 
     const invitation = new GroupJoinInvitation();
-    invitation.groupId = createGroupJoinInvitationDto.groupId;
-    invitation.ownerId = user.id;
+    invitation.groupId = groupId;
+    invitation.ownerId = userId;
     invitation.status = JoinGroupInvitationStatus.PENDING;
+
+    return this.groupJoinInvitationRepository.save(invitation);
   }
 
   findAll(filter: FindManyOptions<GroupJoinInvitation>) {
@@ -72,22 +71,19 @@ export class GroupJoinInvitationService {
     if (invitation.status !== JoinGroupInvitationStatus.PENDING) {
       throw new ConflictException('Invitation is not pending');
     }
-    const group = await this.groupRepository.count({
-      where: {
-        id: invitation.groupId,
-        members: {
-          id: invitation.ownerId,
-        },
-      },
-      relations: ['users'],
-    });
 
-    if (group > 0) {
+    const isMember = await this.groupService.checkIfUserIsMember(
+      invitation.groupId,
+      invitation.ownerId,
+    );
+
+    if (isMember) {
       throw new ConflictException('User is already in the group');
     }
 
     invitation.status = JoinGroupInvitationStatus.ACCEPTED;
-    return this.groupJoinInvitationRepository.save(invitation);
+    await this.groupJoinInvitationRepository.save(invitation);
+    return this.groupService.addMember(invitation.groupId, invitation.ownerId);
   }
 
   async cancel(id: number) {

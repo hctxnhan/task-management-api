@@ -1,6 +1,4 @@
-import { User } from '@/entities/user.entity';
-import { ReturnedCategoryDto } from '@/features/category/dto/returned-category.dto';
-import { ReturnedLabelDto } from '@/features/label/dto/returned-label.dto';
+import { Role } from '@/features/authorization/role.type';
 import { Expose } from 'class-transformer';
 
 export class ReturnedGroupDto {
@@ -8,16 +6,10 @@ export class ReturnedGroupDto {
   id: number;
 
   @Expose()
-  user: User;
-
-  @Expose()
-  categories: ReturnedCategoryDto[];
-
-  @Expose()
-  labels: ReturnedLabelDto[];
-
-  @Expose()
   name: string;
+
+  @Expose()
+  role?: Role.GROUP_MEMBER | Role.GROUP_OWNER;
 
   constructor(partial: Partial<ReturnedGroupDto>) {
     Object.assign(this, partial);

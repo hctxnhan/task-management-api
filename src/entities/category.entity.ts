@@ -27,7 +27,9 @@ export class Category extends Resource {
   @OneToMany(() => Task, (task) => task.category)
   tasks?: Task[];
 
-  @ManyToOne(() => Group, (group) => group.categories)
+  @ManyToOne(() => Group, (group) => group.categories, {
+    onDelete: 'CASCADE',
+  })
   group?: Group;
 
   @JoinTable()

@@ -22,7 +22,9 @@ export class GroupJoinInvitation extends Resource {
   })
   status: JoinGroupInvitationStatus;
 
-  @ManyToOne(() => Group, (group) => group.tasks)
+  @ManyToOne(() => Group, (group) => group.joinInvitations, {
+    onDelete: 'CASCADE',
+  })
   group?: Group;
 
   @JoinTable()

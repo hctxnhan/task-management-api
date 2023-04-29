@@ -77,7 +77,6 @@ export class CategoryController {
   }
 
   @SetAuthorization(Permission.DELETE, PermissionScope.ALL)
-  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async remove(@Param('id') id: number) {
     await this.categoryService.remove(id);

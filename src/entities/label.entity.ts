@@ -20,6 +20,8 @@ export class Label extends Resource {
   @ManyToOne(() => User, (user) => user.labels)
   owner: User;
 
-  @ManyToOne(() => Group, (group) => group.labels)
+  @ManyToOne(() => Group, (group) => group.labels, {
+    onDelete: 'CASCADE',
+  })
   group?: Group;
 }
