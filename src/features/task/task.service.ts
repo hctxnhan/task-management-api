@@ -8,7 +8,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Like, MoreThan, Repository } from 'typeorm';
+import { FindManyOptions, IsNull, Like, MoreThan, Repository } from 'typeorm';
 import { TaskScheduler } from '../task-scheduler/task-scheduler';
 import { UserService } from '../user/user.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -70,6 +70,7 @@ export class TaskService {
       labels,
       priority,
       groupId,
+      duration,
     } = createTaskDto;
 
     const isValid = await this.userService.categoryAndLabelsIsValid(
@@ -92,6 +93,7 @@ export class TaskService {
     task.categoryId = categoryId;
     task.priority = priority;
     task.groupId = groupId;
+    task.duration = duration;
 
     task.labels = labels.map((label) => {
       const labelEntity = new Label();
@@ -108,12 +110,14 @@ export class TaskService {
   }
 
   async pagination(taskPaginationDto: TaskPaginationDto, user: User) {
-    const { limit, order, orderBy, page, search, status } = taskPaginationDto;
+    const { limit, order, orderBy, page, search, status, groupId } =
+      taskPaginationDto;
     const [result, count] = await this.taskRepository.findAndCount({
       where: {
         ownerId: user.id,
         status,
         title: search ? Like(`%${search}%`) : undefined,
+        group: groupId ? { id: groupId } : { id: IsNull() },
       },
       take: limit,
       skip: (page - 1) * limit,
@@ -136,8 +140,45 @@ export class TaskService {
     });
   }
 
-  update(id: number, updateTaskDto: UpdateTaskDto) {
-    throw new Error('Method not implemented.');
+  update(id: number, currentTast: Task, updateTaskDto: UpdateTaskDto) {
+    const {
+      description,
+      dueDate,
+      title,
+      categoryId,
+      labels,
+      priority,
+      duration,
+      status,
+    } = updateTaskDto;
+
+    const isValid = this.userService.categoryAndLabelsIsValid(
+      currentTast.ownerId,
+      labels,
+      categoryId,
+      currentTast.groupId,
+    );
+
+    if (!isValid) {
+      throw new NotFoundException('Invalid category or labels');
+    }
+
+    currentTast.dueDate = new Date(dueDate);
+    currentTast.description = description;
+    currentTast.title = title;
+    currentTast.categoryId = categoryId;
+    currentTast.priority = priority;
+    currentTast.duration = duration;
+    currentTast.status = status;
+
+    currentTast.labels = labels.map((label) => {
+      const labelEntity = new Label();
+      labelEntity.id = label;
+
+      return labelEntity;
+    });
+
+    return this.taskRepository.save(currentTast);
   }
 
   updateStatus(id: number, status: TaskStatus) {

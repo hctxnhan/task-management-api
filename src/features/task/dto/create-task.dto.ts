@@ -1,12 +1,10 @@
 import { TaskPriority } from '@/types/enum';
-import { Optional } from '@nestjs/common/decorators';
-import { ApiHideProperty } from '@nestjs/swagger';
-import { Exclude } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
   IsInt,
   IsNumber,
+  IsOptional,
   IsString,
 } from 'class-validator';
 
@@ -21,24 +19,21 @@ export class CreateTaskDto {
   dueDate: string;
 
   @IsInt()
-  @Optional()
-  categoryId?: number;
+  categoryId: number;
 
-  @Optional()
   @IsNumber()
-  duration?: number;
+  duration: number;
 
   @IsEnum(TaskPriority)
-  @Optional()
-  priority?: TaskPriority;
+  priority: TaskPriority;
 
   @IsInt({
     each: true,
   })
-  @Optional()
+  @IsOptional()
   labels?: number[];
 
-  @Exclude()
-  @ApiHideProperty()
+  @IsInt()
+  @IsOptional()
   groupId?: number;
 }
