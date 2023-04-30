@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { Group } from '@/entities/group.entity';
 import { GroupJoinInvitation } from '@/entities/group-join-invitation';
 import { Notification } from '@/entities/notification.entity';
+import { Comment } from '@/entities/comment.entity';
 @Injectable()
 export class TypeOrmConfigServiceService implements TypeOrmOptionsFactory {
   constructor(private readonly configService: ConfigService) {}
@@ -31,6 +32,7 @@ export class TypeOrmConfigServiceService implements TypeOrmOptionsFactory {
         Group,
         GroupJoinInvitation,
         Notification,
+        Comment,
       ],
     };
   }

@@ -1,4 +1,5 @@
 import { Category } from '@/entities/category.entity';
+import { Comment } from '@/entities/comment.entity';
 import { GroupJoinInvitation } from '@/entities/group-join-invitation';
 import { Group } from '@/entities/group.entity';
 import { Label } from '@/entities/label.entity';
@@ -15,4 +16,5 @@ export const resourceTypeToEntity = {
   [ResourceType.LABEL]: Label,
   [ResourceType.NOTIFICATION]: Notification,
   [ResourceType.GROUP_JOIN_INVITATION]: GroupJoinInvitation,
+  [ResourceType.COMMENT]: Comment,
 };

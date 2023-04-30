@@ -1,10 +1,11 @@
 import { Group } from '@/entities/group.entity';
 import { User } from '@/entities/user.entity';
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
+import { Role } from '../authorization/role.type';
 
 @Injectable()
 export class GroupService {
@@ -96,5 +97,27 @@ export class GroupService {
       .relation(User, 'groups')
       .of(userId)
       .remove(groupId);
+  }
+
+  async checkGroupRole(groupId: number, userId: number) {
+    let role: Role.GROUP_MEMBER | Role.GROUP_OWNER = null;
+    const group = await this.findOne(groupId);
+
+    if (!group) {
+      throw new NotFoundException('Group not found');
+    }
+
+    const isGroupOwner = group.ownerId === userId;
+    if (isGroupOwner) {
+      role = Role.GROUP_OWNER;
+    } else {
+      const isMemberOfGroup = this.checkIfUserIsMember(groupId, userId);
+
+      if (isMemberOfGroup) {
+        role = Role.GROUP_MEMBER;
+      }
+    }
+
+    return role;
   }
 }

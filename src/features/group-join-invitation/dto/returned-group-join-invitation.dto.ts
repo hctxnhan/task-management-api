@@ -1,4 +1,5 @@
 import { User } from '@/entities/user.entity';
+import { MinimalReturnedUserDto } from '@/features/user/dto/minimal-returned-user.dto';
 import { JoinGroupInvitationStatus } from '@/types/enum';
 import { Expose, Transform } from 'class-transformer';
 
@@ -7,7 +8,7 @@ export class ReturnedGroupJoinInvitationDto {
   @Transform(({ value }: { value: User }) => {
     return { userId: value.id, name: value.name };
   })
-  requestBy: User;
+  requestBy: MinimalReturnedUserDto;
 
   @Expose()
   id: number;
