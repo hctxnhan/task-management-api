@@ -18,6 +18,7 @@ import { GroupJoinInvitationModule } from './features/group-join-invitation/grou
 import { AuthorizationGuard } from './common/guards/authorization.guard';
 import { ScheduleModule } from '@nestjs/schedule';
 import { IsValidColumnNameConstraint } from './common/decorators/valid-column-name.decorator';
+import { CommentModule } from './features/comment/comment.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { IsValidColumnNameConstraint } from './common/decorators/valid-column-na
     GroupModule,
     NotificationModule,
     GroupJoinInvitationModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [

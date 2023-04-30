@@ -5,6 +5,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Category } from './category.entity';
@@ -12,6 +13,7 @@ import { Group } from './group.entity';
 import { Label } from './label.entity';
 import { Resource } from './resource.entity';
 import { User } from './user.entity';
+import { Comment } from './comment.entity';
 
 @Entity()
 export class Task extends Resource {
@@ -75,4 +77,7 @@ export class Task extends Resource {
   @JoinTable()
   @ManyToOne(() => User, (user) => user.tasks)
   owner: User;
+
+  @OneToMany(() => Comment, (comment) => comment.task)
+  comments?: Comment[];
 }

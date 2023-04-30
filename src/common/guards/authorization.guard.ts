@@ -16,12 +16,14 @@ import { resourceTypeToEntity } from '@/utils/resource-type-to-entity.util';
 import { ResourceType } from '@/features/authorization/resource-type.type';
 import { checkPermission } from '@/utils/check-permission.util';
 import { Request } from 'express';
+import { GroupService } from '@/features/group/group.service';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly dataSource: DataSource,
+    private readonly groupService: GroupService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -47,6 +49,9 @@ export class AuthorizationGuard implements CanActivate {
     const needAuthorized = this.reflector.get<{
       permission: Permission;
       scope: PermissionScope;
+      options?: {
+        resourceId?: string;
+      };
     }>(AuthorizationAttribute.NEED_AUTHORIZED, context.getHandler());
 
     const resourceType = this.reflector.getAllAndOverride<ResourceType>(
@@ -55,13 +60,16 @@ export class AuthorizationGuard implements CanActivate {
     );
 
     if (needAuthorized) {
-      const { permission, scope } = needAuthorized;
+      const { permission, scope, options } = needAuthorized;
       // If the route is need to be manually authorized, then return true
       if (scope === PermissionScope.MANUAL) {
         return true;
       }
 
-      const resourceId = request.params.id || request.body.id;
+      const resourceId =
+        request.params[options?.resourceId ?? 'id'] ||
+        request.body[options?.resourceId ?? 'id'];
+
       let resource;
       if (resourceId) {
         resource = await this.dataSource
@@ -72,7 +80,7 @@ export class AuthorizationGuard implements CanActivate {
             },
           });
         if (!resource) {
-          throw new NotFoundException('Resource not found');
+          throw new NotFoundException(`${resourceType} not found`);
         }
       }
 
@@ -86,35 +94,7 @@ export class AuthorizationGuard implements CanActivate {
         (scope === PermissionScope.GROUP || scope === PermissionScope.ALL) &&
         groupId
       ) {
-        const group = await this.dataSource
-          .getRepository(resourceTypeToEntity[ResourceType.GROUP])
-          .findOne({
-            where: {
-              id: groupId,
-            },
-          });
-
-        if (!group) {
-          throw new NotFoundException('Group not found');
-        }
-
-        const isGroupOwner = group.ownerId === user.id;
-        if (isGroupOwner) {
-          role = Role.GROUP_OWNER;
-        } else {
-          const isMemberOfGroup =
-            (await this.dataSource
-              .getRepository(resourceTypeToEntity[ResourceType.GROUP])
-              .createQueryBuilder('group')
-              .leftJoinAndSelect('group.members', 'member')
-              .where('group.id = :groupId', { groupId })
-              .andWhere('member.id = :userId', { userId: user.id })
-              .getCount()) > 0;
-
-          if (isMemberOfGroup) {
-            role = Role.GROUP_MEMBER;
-          }
-        }
+        role = await this.groupService.checkGroupRole(groupId, user.id);
       }
       if (
         scope === PermissionScope.OWN ||

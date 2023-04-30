@@ -60,6 +60,9 @@ export const rbacMap: RBACMap = {
     [Role.GROUP_OWNER]: FULL_ACCESS_GROUP_OWNER,
     [Role.GROUP_MEMBER]: {
       [Permission.READ]: PermissionScope.GROUP,
+      [Permission.UPDATE]: PermissionScope.GROUP,
+      [Permission.DELETE]: PermissionScope.GROUP,
+      [Permission.CREATE]: PermissionScope.GROUP,
     },
     [Role.USER]: FULL_ACCESS_OWN_RESOURCE,
   },

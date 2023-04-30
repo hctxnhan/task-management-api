@@ -21,9 +21,13 @@ export function SetResourceType(resourceType: ResourceType) {
 export function SetAuthorization(
   permission: Permission,
   scope: PermissionScope = PermissionScope.OWN,
+  options?: {
+    resourceId?: string;
+  },
 ) {
   return SetMetadata(AuthorizationAttribute.NEED_AUTHORIZED, {
     permission,
     scope,
+    options,
   });
 }
