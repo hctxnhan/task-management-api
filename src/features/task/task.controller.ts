@@ -11,8 +11,6 @@ import {
   Controller,
   Delete,
   Get,
-  HttpCode,
-  HttpStatus,
   Param,
   Patch,
   Post,
@@ -71,8 +69,8 @@ export class TaskController {
 
   @SetAuthorization(Permission.READ, PermissionScope.ALL)
   @Get(':id')
-  async findOne(@Param('id') id: number, @CurrentResource() task: Task) {
-    return new ReturnedTaskDto(task);
+  async findOne(@Param('id') id: number) {
+    return new ReturnedTaskDto(await this.taskService.findOne(id));
   }
 
   @SetAuthorization(Permission.UPDATE, PermissionScope.ALL)

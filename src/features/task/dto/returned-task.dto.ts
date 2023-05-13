@@ -1,4 +1,5 @@
 import { ReturnedLabelDto } from '@/features/label/dto/returned-label.dto';
+import { ReturnedUserDto } from '@/features/user/dto/returned-user.dto';
 import { TaskPriority, TaskStatus } from '@/types/enum';
 import { Expose, Type } from 'class-transformer';
 
@@ -34,6 +35,10 @@ export class ReturnedTaskDto {
 
   @Expose()
   groupId?: number;
+
+  @Expose()
+  @Type(() => ReturnedUserDto)
+  assignee: ReturnedUserDto;
 
   constructor(partial: Partial<ReturnedTaskDto>) {
     Object.assign(this, partial);
