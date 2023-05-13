@@ -137,6 +137,7 @@ export class TaskService {
   findOne(id: number) {
     return this.taskRepository.findOne({
       where: { id },
+      relations: ['assignee'],
     });
   }
 
