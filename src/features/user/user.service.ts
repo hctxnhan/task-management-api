@@ -1,8 +1,9 @@
 import { User } from '@/entities/user.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOneOptions, Repository } from 'typeorm';
+import { FindManyOptions, FindOneOptions, Repository } from 'typeorm';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { hashedPassword } from '@/utils/bcrypt-hash.util';
 
 @Injectable()
 export class UserService {
@@ -43,8 +44,8 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  findAll(options: FindManyOptions<User>) {
+    return this.userRepository.find(options);
   }
 
   findOne(filter: FindOneOptions) {
@@ -55,27 +56,16 @@ export class UserService {
     return this.findOne({ where: { email } });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const { password } = updateUserDto;
+    if (password) {
+      const hashed = await hashedPassword(password);
+      updateUserDto.password = hashed;
+    }
+    return this.userRepository.update(id, updateUserDto);
   }
 
   async isUserInGroup(groupId: number, userId: number) {
-    // const user = await this.userRepository.findOne({
-    //   where: {
-    //     id: userId,
-    //     groups: {
-    //       id: groupId,
-    //     },
-    //     ownedGroups: {
-    //       ownerId: userId,
-    //     },
-    //   },
-    //   relations: {
-    //     groups: true,
-    //     ownedGroups: true,
-    //   },
-    // });
-
     const query = this.userRepository
       .createQueryBuilder('user')
       .leftJoin('user.groups', 'group')

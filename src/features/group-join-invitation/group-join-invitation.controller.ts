@@ -52,14 +52,8 @@ export class GroupJoinInvitationController {
 
   @SetAuthorization(Permission.CREATE)
   @Post('request/:groupId')
-  async create(
-    @Body() createGroupJoinInvitationDto: CreateGroupJoinInvitationDto,
-    @CurrentUser() user: User,
-  ) {
-    await this.groupJoinInvitationService.create(
-      createGroupJoinInvitationDto,
-      user,
-    );
+  async create(@CurrentUser() user: User, @Param('groupId') groupId: number) {
+    await this.groupJoinInvitationService.create(groupId, user);
   }
 
   @SetAuthorization(Permission.READ, PermissionScope.GROUP)

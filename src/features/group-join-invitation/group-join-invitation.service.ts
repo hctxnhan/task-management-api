@@ -1,5 +1,5 @@
 import { GroupJoinInvitation } from '@/entities/group-join-invitation';
-import { Group } from '@/entities/group.entity';
+import { User } from '@/entities/user.entity';
 import { JoinGroupInvitationStatus } from '@/types/enum';
 import {
   ConflictException,
@@ -8,8 +8,6 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
-import { CreateGroupJoinInvitationDto } from './dto/create-group-join-invitation.dto';
-import { User } from '@/entities/user.entity';
 import { GroupService } from '../group/group.service';
 
 @Injectable()
@@ -20,11 +18,7 @@ export class GroupJoinInvitationService {
     private readonly groupService: GroupService,
   ) {}
 
-  async create(
-    createGroupJoinInvitationDto: CreateGroupJoinInvitationDto,
-    user: User,
-  ) {
-    const { groupId } = createGroupJoinInvitationDto;
+  async create(groupId: number, user: User) {
     const userId = user.id;
     // check if the user is already in the group
     const isMember = await this.groupService.checkIfUserIsMember(
