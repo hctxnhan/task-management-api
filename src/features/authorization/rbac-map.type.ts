@@ -80,4 +80,7 @@ export const rbacMap: RBACMap = {
     },
     [Role.USER]: FULL_ACCESS_OWN_RESOURCE,
   },
+  [ResourceType.USER]: {
+    [Role.USER]: FULL_ACCESS_OWN_RESOURCE,
+  },
 };

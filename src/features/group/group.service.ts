@@ -1,17 +1,24 @@
 import { Group } from '@/entities/group.entity';
 import { User } from '@/entities/user.entity';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
 import { CreateGroupDto } from './dto/create-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { Role } from '../authorization/role.type';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class GroupService {
   constructor(
     @InjectRepository(Group)
     private readonly groupRepository: Repository<Group>,
+    private readonly userService: UserService,
   ) {}
 
   create(createGroupDto: CreateGroupDto, owner: User) {
@@ -38,7 +45,7 @@ export class GroupService {
   }
 
   update(id: number, updateGroupDto: UpdateGroupDto) {
-    return `This action updates a #${id} group`;
+    return this.groupRepository.update(id, updateGroupDto);
   }
 
   remove(id: number) {
@@ -70,7 +77,7 @@ export class GroupService {
     // check if the user is the owner of the group
     const group = await this.findOne(groupId);
     if (group.owner.id !== user.id) {
-      throw new Error('Only owner can kick members');
+      throw new ForbiddenException('Only owner can kick members');
     }
 
     return this.removeMember(groupId, userId);
@@ -80,7 +87,7 @@ export class GroupService {
     // check if the user is the owner of the group
     const group = await this.findOne(groupId);
     if (group.owner.id === userId) {
-      throw new Error('Owner cannot leave the group');
+      throw new BadRequestException('Owner cannot leave the group');
     }
 
     return this.removeMember(groupId, userId);
@@ -89,7 +96,7 @@ export class GroupService {
   async removeMember(groupId: number, userId: number) {
     const isMember = await this.checkIfUserIsMember(groupId, userId);
     if (!isMember) {
-      throw new Error('User is not a member of the group');
+      throw new BadRequestException('User is not a member of the group');
     }
 
     return this.groupRepository
@@ -119,5 +126,15 @@ export class GroupService {
     }
 
     return role;
+  }
+
+  async getMembers(groupId: number) {
+    return await this.userService.findAll({
+      where: {
+        groups: {
+          id: groupId,
+        },
+      },
+    });
   }
 }

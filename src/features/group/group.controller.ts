@@ -22,6 +22,7 @@ import { ReturnedGroupDto } from './dto/returned-group.dto';
 import { UpdateGroupDto } from './dto/update-group.dto';
 import { GroupService } from './group.service';
 import { Role } from '../authorization/role.type';
+import { ReturnedUserDto } from '../user/dto/returned-user.dto';
 
 @ApiBearerAuth()
 @ApiTags('Group')
@@ -34,6 +35,13 @@ export class GroupController {
   @Post(':groupId/leave')
   async leave(@Param('groupId') id: number, @CurrentUser() user: User) {
     await this.groupService.leaveGroup(id, user.id);
+  }
+
+  @SetAuthorization(Permission.READ, PermissionScope.GROUP)
+  @Get(':groupId/members')
+  async getMembers(@Param('groupId') id: number) {
+    const allMembers = await this.groupService.getMembers(id);
+    return allMembers.map((member) => new ReturnedUserDto(member));
   }
 
   @SetAuthorization(Permission.READ, PermissionScope.OWN)
