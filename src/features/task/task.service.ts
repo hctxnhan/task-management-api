@@ -112,9 +112,19 @@ export class TaskService {
   async pagination(taskPaginationDto: TaskPaginationDto, user: User) {
     const { limit, order, orderBy, page, search, status, groupId } =
       taskPaginationDto;
+
+    if (groupId) {
+      const isMember =
+        (await this.groupService.checkGroupRole(groupId, user.id)) !== null;
+
+      if (!isMember) {
+        throw new NotFoundException('Group not found');
+      }
+    }
+
     const [result, count] = await this.taskRepository.findAndCount({
       where: {
-        ownerId: user.id,
+        ownerId: groupId ? undefined : user.id,
         status,
         title: search ? Like(`%${search}%`) : undefined,
         group: groupId ? { id: groupId } : { id: IsNull() },
