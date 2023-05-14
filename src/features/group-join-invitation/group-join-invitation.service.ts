@@ -1,6 +1,6 @@
 import { GroupJoinInvitation } from '@/entities/group-join-invitation';
 import { User } from '@/entities/user.entity';
-import { JoinGroupInvitationStatus } from '@/types/enum';
+import { JoinGroupInvitationStatus, NotificationType } from '@/types/enum';
 import {
   ConflictException,
   Injectable,
@@ -9,6 +9,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Repository } from 'typeorm';
 import { GroupService } from '../group/group.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class GroupJoinInvitationService {
@@ -16,6 +17,7 @@ export class GroupJoinInvitationService {
     @InjectRepository(GroupJoinInvitation)
     private readonly groupJoinInvitationRepository: Repository<GroupJoinInvitation>,
     private readonly groupService: GroupService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(groupId: number, user: User) {
@@ -35,7 +37,13 @@ export class GroupJoinInvitationService {
     invitation.ownerId = userId;
     invitation.status = JoinGroupInvitationStatus.PENDING;
 
-    return this.groupJoinInvitationRepository.save(invitation);
+    const res = await this.groupJoinInvitationRepository.save(invitation);
+    await this.notificationService.createNotificationForGroupOwner(groupId, {
+      message: `${user.username} wants to join your group ${res.groupId}}`,
+      type: NotificationType.GROUP_JOIN_REQUEST,
+    });
+
+    return res;
   }
 
   findAll(filter: FindManyOptions<GroupJoinInvitation>) {
@@ -57,7 +65,13 @@ export class GroupJoinInvitationService {
     }
 
     invitation.status = JoinGroupInvitationStatus.REJECTED;
-    return this.groupJoinInvitationRepository.save(invitation);
+    const res = await this.groupJoinInvitationRepository.save(invitation);
+    await this.notificationService.createNotification({
+      message: `Your request to join group ${res.groupId} has been rejected`,
+      ownerId: res.ownerId,
+      type: NotificationType.GROUP_JOIN_REQUEST_REJECTED,
+    });
+    return res;
   }
 
   async accept(id: number) {
@@ -76,7 +90,12 @@ export class GroupJoinInvitationService {
     }
 
     invitation.status = JoinGroupInvitationStatus.ACCEPTED;
-    await this.groupJoinInvitationRepository.save(invitation);
+    const res = await this.groupJoinInvitationRepository.save(invitation);
+    await this.notificationService.createNotification({
+      message: `Your request to join group ${res.groupId} has been accepted`,
+      ownerId: res.ownerId,
+      type: NotificationType.GROUP_JOIN_REQUEST_ACCEPTED,
+    });
     return this.groupService.addMember(invitation.groupId, invitation.ownerId);
   }
 

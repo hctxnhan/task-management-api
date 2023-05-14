@@ -152,7 +152,7 @@ export class TaskService {
     });
   }
 
-  update(id: number, currentTast: Task, updateTaskDto: UpdateTaskDto) {
+  update(id: number, currentTask: Task, updateTaskDto: UpdateTaskDto) {
     const {
       description,
       dueDate,
@@ -165,40 +165,40 @@ export class TaskService {
     } = updateTaskDto;
 
     const isValid = this.userService.categoryAndLabelsIsValid(
-      currentTast.ownerId,
+      currentTask.ownerId,
       labels,
       categoryId,
-      currentTast.groupId,
+      currentTask.groupId,
     );
 
     if (!isValid) {
       throw new NotFoundException('Invalid category or labels');
     }
 
-    currentTast.dueDate = new Date(dueDate);
-    currentTast.description = description;
-    currentTast.title = title;
-    currentTast.categoryId = categoryId;
-    currentTast.priority = priority;
-    currentTast.duration = duration;
-    currentTast.status = status;
+    currentTask.dueDate = new Date(dueDate);
+    currentTask.description = description;
+    currentTask.title = title;
+    currentTask.categoryId = categoryId;
+    currentTask.priority = priority;
+    currentTask.duration = duration;
+    currentTask.status = status;
 
-    currentTast.labels = labels.map((label) => {
+    currentTask.labels = labels.map((label) => {
       const labelEntity = new Label();
       labelEntity.id = label;
 
       return labelEntity;
     });
 
-    return this.taskRepository.save(currentTast);
+    return this.taskRepository.save(currentTask);
   }
 
-  updateStatus(id: number, status: TaskStatus) {
-    this.taskRepository.update(id, { status });
+  async updateStatus(id: number, status: TaskStatus) {
+    await this.taskRepository.update(id, { status });
   }
 
   updatePriority(id: number, priority: TaskPriority) {
-    this.taskRepository.update(id, { priority });
+    return this.taskRepository.update(id, { priority });
   }
 
   remove(id: number) {
