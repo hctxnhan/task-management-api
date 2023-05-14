@@ -129,6 +129,7 @@ export class TaskService {
         title: search ? Like(`%${search}%`) : undefined,
         group: groupId ? { id: groupId } : { id: IsNull() },
       },
+      relations: ['assignee'],
       take: limit,
       skip: (page - 1) * limit,
       order: {
