@@ -1,6 +1,10 @@
 import { Label } from '@/entities/label.entity';
 import { User } from '@/entities/user.entity';
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindManyOptions, Like, Repository } from 'typeorm';
 import { CreateLabelDto } from './dto/create-label.dto';
@@ -8,10 +12,12 @@ import { UpdateLabelDto } from './dto/update-label.dto';
 import { LabelPaginationDto } from './dto/label-pagination.dto';
 import { PaginationResultDto } from '@/common/dto/pagination-result.dto';
 import { ReturnedLabelDto } from './dto/returned-label.dto';
+import { GroupService } from '../group/group.service';
 @Injectable()
 export class LabelService {
   constructor(
     @InjectRepository(Label) private labelRepository: Repository<Label>,
+    private readonly groupService: GroupService,
   ) {}
 
   async create(createLabelDto: CreateLabelDto, owner: User) {
@@ -58,9 +64,19 @@ export class LabelService {
 
   async pagination(paginationDto: LabelPaginationDto, user: User) {
     const { limit, order, orderBy, page, search, groupId } = paginationDto;
+
+    if (groupId) {
+      const isMember =
+        (await this.groupService.checkGroupRole(groupId, user.id)) !== null;
+
+      if (!isMember) {
+        throw new NotFoundException('Group not found');
+      }
+    }
+
     const [result, count] = await this.labelRepository.findAndCount({
       where: {
-        ownerId: user.id,
+        ownerId: groupId ? undefined : user.id,
         name: search ? Like(`%${search}%`) : undefined,
         groupId: groupId,
       },
