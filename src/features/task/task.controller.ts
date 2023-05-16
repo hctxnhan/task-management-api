@@ -26,6 +26,7 @@ import { PriorityUpdateDto } from './dto/priority-update-dto';
 import { ReturnedTaskDto } from './dto/returned-task.dto';
 import { StatusUpdateDto } from './dto/status-update.dto';
 import { TaskPaginationDto } from './dto/task-pagination.dto';
+import { UnassignTaskDto } from './dto/unassign-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TaskService } from './task.service';
 
@@ -120,6 +121,18 @@ export class TaskController {
     @Body() assignTaskDto: AssignTaskDto,
   ) {
     await this.taskService.assignTask(id, assignTaskDto);
+    return {
+      message: 'Task assigned',
+    };
+  }
+
+  @SetAuthorization(Permission.UPDATE, PermissionScope.GROUP)
+  @Patch(':id/unassign')
+  async unassignTask(
+    @Param('id') id: number,
+    @Body() assignTaskDto: UnassignTaskDto,
+  ) {
+    await this.taskService.unassignTask(id, assignTaskDto.groupId);
     return {
       message: 'Task assigned',
     };
