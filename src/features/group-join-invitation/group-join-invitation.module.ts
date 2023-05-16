@@ -1,13 +1,17 @@
-import { Module } from '@nestjs/common';
-import { GroupJoinInvitationService } from './group-join-invitation.service';
-import { GroupJoinInvitationController } from './group-join-invitation.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { GroupJoinInvitation } from '@/entities/group-join-invitation';
-import { Group } from '@/entities/group.entity';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { GroupModule } from '../group/group.module';
+import { NotificationModule } from '../notification/notification.module';
+import { GroupJoinInvitationController } from './group-join-invitation.controller';
+import { GroupJoinInvitationService } from './group-join-invitation.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([GroupJoinInvitation]), GroupModule],
+  imports: [
+    TypeOrmModule.forFeature([GroupJoinInvitation]),
+    GroupModule,
+    NotificationModule,
+  ],
   controllers: [GroupJoinInvitationController],
   providers: [GroupJoinInvitationService],
 })
