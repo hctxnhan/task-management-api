@@ -227,10 +227,10 @@ export class TaskService {
 
     const task = await this.taskRepository.findOne({
       where: { id },
-      relations: ['owner'],
+      relations: ['assignee'],
     });
 
-    if (task.ownerId !== assignTaskDto.userId) {
+    if (task.assignee.id !== assignTaskDto.userId) {
       throw new ConflictException('Task is already assigned to another user');
     }
 
