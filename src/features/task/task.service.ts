@@ -230,7 +230,7 @@ export class TaskService {
       relations: ['assignee'],
     });
 
-    if (task.assignee.id !== assignTaskDto.userId) {
+    if (task.assignee !== null) {
       throw new ConflictException('Task is already assigned to another user');
     }
 
