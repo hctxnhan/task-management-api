@@ -83,7 +83,6 @@ export class CategoryService {
         priority,
         group: {
           id: groupId,
-          ownerId: user.id,
         },
       },
       take: limit,
