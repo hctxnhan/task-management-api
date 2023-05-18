@@ -54,7 +54,12 @@ export class AuthorizationGuard implements CanActivate {
       };
     }>(AuthorizationAttribute.NEED_AUTHORIZED, context.getHandler());
 
-    const resourceType = this.reflector.getAllAndOverride<ResourceType>(
+    // const resourceType = this.reflector.getAllAndOverride<ResourceType>(
+    //   AuthorizationAttribute.RESOURCE_TYPE,
+    //   [context.getHandler(), context.getClass()],
+    // );
+
+    const resourceType = this.reflector.getAllAndMerge<ResourceType[]>(
       AuthorizationAttribute.RESOURCE_TYPE,
       [context.getHandler(), context.getClass()],
     );
@@ -73,7 +78,7 @@ export class AuthorizationGuard implements CanActivate {
       let resource;
       if (resourceId) {
         resource = await this.dataSource
-          .getRepository(resourceTypeToEntity[resourceType])
+          .getRepository(resourceTypeToEntity[resourceType[0]])
           .findOne({
             where: {
               id: resourceId,
@@ -117,12 +122,11 @@ export class AuthorizationGuard implements CanActivate {
           : scope;
 
       const hasAccess = checkPermission(
-        resourceType,
+        resourceType[1],
         role,
         permission,
         actualScope,
       );
-
       if (!hasAccess) {
         throw new ForbiddenException(
           'You are not authorized to perform this action',

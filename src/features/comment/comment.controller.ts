@@ -23,7 +23,7 @@ export class CommentController {
   @SetAuthorization(Permission.CREATE, PermissionScope.GROUP, {
     resourceId: 'taskId',
   })
-  @Post(':taskId') /*taskId*/
+  @Post(':taskId')
   async create(
     @Body() createCommentDto: CreateCommentDto,
     @CurrentUser() user: User,
